@@ -21,7 +21,6 @@ class SecurityConfig(
             }
             .authorizeHttpRequests {
                 it.requestMatchers(
-                    "/login",
                     "/error"
                 ).permitAll()
                 it.anyRequest().authenticated()
@@ -29,7 +28,10 @@ class SecurityConfig(
             .oauth2Login {
                 it.successHandler(oAuth2LoginSuccessHandler)
             }
-
+            .exceptionHandling {
+                it.authenticationEntryPoint(CustomAuthenticationEntryPoint())
+                it.accessDeniedHandler(CustomAccessDeniedHandler())
+            }
 
         return http.build()
     }
