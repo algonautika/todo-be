@@ -1,7 +1,7 @@
 package algo.todo.global.dto
 
 import algo.todo.global.exception.CustomException
-import org.springframework.http.HttpStatus
+import algo.todo.global.exception.ErrorType
 
 class CommonResponseDto private constructor(
     val status: String,
@@ -9,20 +9,17 @@ class CommonResponseDto private constructor(
     val data: Any?
 ) {
     constructor(
+        errorType: ErrorType,
         domainCode: DomainCode,
-        status: HttpStatus,
-        message: String,
         data: Any?
     ) : this(
-        "${status.value()}-${domainCode.code}",
-        message,
+        "${errorType.status.value()}-${domainCode.code}",
+        errorType.message,
         data
     )
 
-    constructor(
-        exception: CustomException
-    ) : this(
-        "${exception.errorType.status}-${exception.domainCode.code}",
+    constructor(exception: CustomException) : this(
+        "${exception.errorType.status.value()}-${exception.domainCode.code}",
         exception.errorType.message,
         null
     )

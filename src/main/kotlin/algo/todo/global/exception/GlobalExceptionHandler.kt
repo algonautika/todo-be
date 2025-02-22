@@ -4,43 +4,43 @@ import algo.todo.global.dto.CommonResponseDto
 import algo.todo.global.dto.DomainCode
 import org.apache.logging.log4j.LogManager
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import org.springframework.web.servlet.function.EntityResponse
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
 @RestControllerAdvice
-class GlobalExceptionHandler {
+class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
     companion object {
-        private val log = LogManager.getLogger(GlobalExceptionHandler::class.java)
+        private val log = LogManager.getLogger(
+            GlobalExceptionHandler::class.java
+        )
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): EntityResponse<CommonResponseDto> {
+    fun handleException(e: Exception): ResponseEntity<CommonResponseDto> {
         printErrorMessage(e)
 
         val dto = CommonResponseDto(
-            status = HttpStatus.INTERNAL_SERVER_ERROR,
+            errorType = ErrorType.UNCAUGHT_EXCEPTION,
             domainCode = DomainCode.COMMON,
-            message = "Uncaught Exception",
             data = null
         )
-        return EntityResponse
-            .fromObject(dto)
+        return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .build()
+            .body(dto)
     }
 
     @ExceptionHandler(CustomException::class)
-    fun handleCustomException(e: CustomException): EntityResponse<CommonResponseDto> {
+    fun handleCustomException(e: CustomException): ResponseEntity<CommonResponseDto> {
         printErrorMessage(e)
         val dto = CommonResponseDto(
             exception = e
         )
-        return EntityResponse
-            .fromObject(dto)
+        return ResponseEntity
             .status(e.errorType.status)
-            .build()
+            .body(dto)
     }
 
     /**
@@ -48,9 +48,9 @@ class GlobalExceptionHandler {
      */
     private fun printErrorMessage(e: Exception) {
         when (e) {
-            is NullPointerException -> log.error("NullPointerException: ${e.message}")
-            is CustomException -> log.warn("CustomException: ${e.message}")
-            else -> log.error("Uncaught Exception: ${e.message}")
+            is NullPointerException -> log.error(e.printStackTrace())
+            is CustomException -> log.warn(e.printStackTrace())
+            else -> log.error(e.printStackTrace())
         }
     }
 

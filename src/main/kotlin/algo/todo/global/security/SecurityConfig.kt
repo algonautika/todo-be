@@ -21,7 +21,8 @@ class SecurityConfig(
             }
             .authorizeHttpRequests {
                 it.requestMatchers(
-                    "/error"
+                    "/error",
+                    "/user"
                 ).permitAll()
                 it.anyRequest().authenticated()
             }
