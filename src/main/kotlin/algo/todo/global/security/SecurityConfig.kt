@@ -6,11 +6,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler
+    private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler,
+    private val jwtProvider: JwtProvider
 ) {
 
     @Bean
@@ -18,6 +20,9 @@ class SecurityConfig(
         http
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
+            .formLogin {
+                it.disable()
             }
             .authorizeHttpRequests {
                 it.requestMatchers(
@@ -32,6 +37,10 @@ class SecurityConfig(
                 it.authenticationEntryPoint(CustomAuthenticationEntryPoint())
                 it.accessDeniedHandler(CustomAccessDeniedHandler())
             }
+            .addFilterBefore(
+                AuthenticationFilter(jwtProvider),
+                BasicAuthenticationFilter::class.java
+            )
 
         return http.build()
     }

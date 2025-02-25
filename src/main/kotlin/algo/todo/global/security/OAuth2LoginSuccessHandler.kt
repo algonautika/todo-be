@@ -46,7 +46,7 @@ class OAuth2LoginSuccessHandler(
 
             val user = userService.loadOrCreateUser(oAuth2User)
 
-            val jwt = jwtProvider.generateToken(user)
+            val jwt = jwtProvider.generateAccessToken(user)
 
             val cookie = createCookie(jwt)
 

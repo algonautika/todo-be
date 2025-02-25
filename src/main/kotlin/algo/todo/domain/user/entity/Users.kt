@@ -6,8 +6,8 @@ import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "tbl_user")
-class User private constructor(
+@Table(name = "users")
+class Users private constructor(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

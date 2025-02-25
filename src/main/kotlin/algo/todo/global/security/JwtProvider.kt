@@ -1,7 +1,10 @@
 package algo.todo.global.security
 
-import algo.todo.domain.user.entity.User
+import algo.todo.domain.user.entity.Users
 import algo.todo.domain.user.repository.UserRepository
+import algo.todo.global.dto.DomainCode
+import algo.todo.global.exception.CustomException
+import algo.todo.global.exception.ErrorType
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.apache.logging.log4j.LogManager
@@ -17,8 +20,11 @@ class JwtProvider(
     @Value("\${jwt.secret}")
     private val secret: String,
 
-    @Value("\${jwt.expiration}")
-    private val expirationInMillis: Long,
+    @Value("\${jwt.access-token-expiration}")
+    private val accessTokenExpirationInMillis: Long,
+
+    @Value("\${jwt.refresh-token-expiration}")
+    private val refreshTokenExpirationInMillis: Long,
 
     private val userRepository: UserRepository
 ) {
@@ -30,13 +36,37 @@ class JwtProvider(
         private val log = LogManager.getLogger(JwtProvider::class.java)
     }
 
-    fun generateToken(user: User): String {
+    fun generateAccessToken(users: Users): String {
         val now = Date()
-        val expiration = Date(now.time + expirationInMillis)
+        val expiration = Date(now.time + accessTokenExpirationInMillis)
 
         return Jwts.builder()
-            .claim("id", user.id)
-            .subject(user.email)
+            .claim("id", users.id)
+            .claim("token_type", TokenType.ACCESS)
+            .subject(users.email)
+            .issuedAt(now)
+            .expiration(expiration)
+            .signWith(key)
+            .compact()
+    }
+
+    fun ensureValidToken(token: String) {
+        getAuthentication(token) ?: run {
+            throw CustomException(
+                ErrorType.INVALID_TOKEN,
+                DomainCode.COMMON
+            )
+        }
+    }
+
+    fun generateRefreshToken(users: Users): String {
+        val now = Date()
+        val expiration = Date(now.time + refreshTokenExpirationInMillis)
+
+        return Jwts.builder()
+            .claim("id", users.id)
+            .claim("token_type", TokenType.REFRESH)
+            .subject(users.email)
             .issuedAt(now)
             .expiration(expiration)
             .signWith(key)
@@ -45,39 +75,68 @@ class JwtProvider(
 
     fun getAuthentication(accessToken: String): Authentication? {
         try {
-            val claims = getClaimsFromToken(accessToken)
-                .takeIf { it.isNotEmpty() }
-                ?: return null
+            val claims = getClaimsFromToken(accessToken).getOrThrow()
 
-            val id = claims["id"] as Long
-            val email = claims["sub"] as String
+            ensureIsAccessToken(claims)
 
-            val user = userRepository.findByIdAndEmail(id, email) ?: run {
-                log.error("User not found")
-                return null
-            }
+            val user = getUserFromClaims(claims).getOrThrow()
 
             val userDetails = CustomUserDetails(user, claims)
+
             return UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
                 userDetails.authorities
             )
         } catch (e: Exception) {
-            log.error(e.printStackTrace())
+            log.error(e.stackTraceToString())
+            return null
+        } catch (e: CustomException) {
             return null
         }
     }
 
-    private fun getClaimsFromToken(token: String): Map<String, Any> {
-        return try {
+    private fun getUserFromClaims(claims: Map<String, Any>): Result<Users> {
+        val idLong = claims["id"] as Int
+        val email = claims["sub"] as String
+
+        val id = idLong.toLong()
+
+        return kotlin.runCatching {
+            userRepository.findByIdAndEmail(id, email) ?: run {
+                log.warn("User not found")
+                throw CustomException(
+                    ErrorType.UNAUTHORIZED,
+                    DomainCode.COMMON
+                )
+            }
+        }
+    }
+
+    private fun ensureIsAccessToken(claims: Map<String, Any>) {
+        val tokenType = claims["token_type"] as TokenType
+
+        if (tokenType != TokenType.ACCESS) {
+            throw CustomException(
+                ErrorType.UNAUTHORIZED,
+                DomainCode.COMMON
+            )
+        }
+    }
+
+    private fun getClaimsFromToken(token: String): Result<Map<String, Any>> =
+        runCatching {
+            // 블록 안에서 어떤 예외가 발생해도 runCatching -> Result.Failure(...)가 됨
             Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .payload
-        } catch (e: Exception) {
-            emptyMap()
+        }.recoverCatching { e ->
+            log.error(e.stackTraceToString())
+            throw CustomException(
+                ErrorType.INVALID_TOKEN,
+                DomainCode.COMMON
+            )
         }
-    }
 }

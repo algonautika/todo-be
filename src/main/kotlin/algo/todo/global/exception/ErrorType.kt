@@ -30,5 +30,8 @@ enum class ErrorType(
         HttpStatus.BAD_REQUEST,
         "Cannot change to an email that is already in use"
     ),
-
+    INVALID_TOKEN(
+        HttpStatus.BAD_REQUEST,
+        "Invalid token"
+    ),
 }

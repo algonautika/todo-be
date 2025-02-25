@@ -1,6 +1,6 @@
 package algo.todo.domain.user.service
 
-import algo.todo.domain.user.entity.User
+import algo.todo.domain.user.entity.Users
 import algo.todo.domain.user.repository.UserRepository
 import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
@@ -17,7 +17,7 @@ class UserService(
 ) {
 
     @Transactional
-    fun loadOrCreateUser(oAuth2User: OAuth2AuthenticationToken): User {
+    fun loadOrCreateUser(oAuth2User: OAuth2AuthenticationToken): Users {
         val (providerType, providerId, email) = getOauthInfo(oAuth2User)
 
         val user = userRepository.findByProviderTypeAndProviderId(
@@ -48,7 +48,7 @@ class UserService(
         providerType: ProviderType,
         providerId: String,
         email: String
-    ): User {
+    ): Users {
         val user = userRepository.findByEmail(email)
 
         if (user != null) {
@@ -59,7 +59,7 @@ class UserService(
         }
 
         return userRepository.save(
-            User(
+            Users(
                 email = email,
                 providerType = providerType,
                 providerId = providerId
@@ -67,9 +67,9 @@ class UserService(
         )
     }
 
-    private fun processWhenUserIsNotNull(user: User, email: String): User {
+    private fun processWhenUserIsNotNull(users: Users, email: String): Users {
         // 접근한 email 과 조회된 email 이 다를 경우
-        if (user.email != email) {
+        if (users.email != email) {
             val userByEmail = userRepository.findByEmail(email)
 
             if (userByEmail != null) {
@@ -79,11 +79,11 @@ class UserService(
                 )
             }
 
-            user.email = email
-            return userRepository.save(user)
+            users.email = email
+            return userRepository.save(users)
         }
 
-        return user
+        return users
     }
 
     private fun getOauthInfo(

@@ -23,9 +23,9 @@ class AuthenticationFilter(
     ) {
         getAccessTokenFromRequest(request)?.let { token ->
             tokenProvider.getAuthentication(token)
-                ?.let {
+                ?.let { auth ->
                     val context = SecurityContextHolder.getContext()
-                    context.authentication = it
+                    context.authentication = auth
                 }
         }
 

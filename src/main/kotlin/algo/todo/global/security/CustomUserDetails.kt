@@ -1,14 +1,14 @@
 package algo.todo.global.security
 
-import algo.todo.domain.user.entity.User
+import algo.todo.domain.user.entity.Users
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 data class CustomUserDetails(
-    val user: User,
+    val users: Users,
     val claims: Map<String, Any> // 커스텀 필드
 ) : UserDetails {
-    override fun getUsername() = user.email
+    override fun getUsername() = users.email
     override fun getPassword() = null
     override fun getAuthorities(): Collection<GrantedAuthority> = emptyList()
     override fun isAccountNonExpired() = true
