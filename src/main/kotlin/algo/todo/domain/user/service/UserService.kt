@@ -16,27 +16,24 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
+    /**
+     * 분기 처리
+     * 1. 조회된 사용자가 없을 경우
+     * - 1.1 email 이 이미 존재할 경우 -> 이미 사용중인 이메일로 회원가입 불가
+     * - 1.2 email 이 존재하지 않을 경우 -> 사용자 정보 생성 후 사용자 정보 반환
+     *
+     * 2. 조회된 사용자가 있을 경우
+     * - 2.1. 접근한 email 과 조회된 email 이 다를 경우 (소셜의 이메일을 변경했을 때 발생)
+     * --- 2.1.1 변경한 메일이 이미 존재할 경우 -> 사용중인 이메일로 변경했으므로 재변경 요청
+     * --- 2.1.2 변경한 메일이 존재하지 않을 경우 -> 사용자의 메일을 변경하고 사용자 정보 업데이트
+     * - 2.2. 접근한 email 과 조회된 email 이 같을 경우 -> 사용자 정보 반환
+     */
     @Transactional
     fun loadOrCreateUser(oAuth2User: OAuth2AuthenticationToken): Users {
         val (providerType, providerId, email) = getOauthInfo(oAuth2User)
 
-        val user = userRepository.findByProviderTypeAndProviderId(
-            providerType,
-            providerId
-        )
+        val user = userRepository.findByProviderTypeAndProviderId(providerType, providerId)
 
-        /**
-         * 분기 처리
-         * 1. 조회된 사용자가 없을 경우
-         * - 1.1 email 이 이미 존재할 경우 -> 이미 사용중인 이메일로 회원가입 불가
-         * - 1.2 email 이 존재하지 않을 경우 -> 사용자 정보 생성 후 사용자 정보 반환
-         *
-         * 2. 조회된 사용자가 있을 경우
-         * - 2.1. 접근한 email 과 조회된 email 이 다를 경우 (소셜의 이메일을 변경했을 때 발생)
-         * --- 2.1.1 변경한 메일이 이미 존재할 경우 -> 사용중인 이메일로 변경했으므로 재변경 요청
-         * --- 2.1.2 변경한 메일이 존재하지 않을 경우 -> 사용자의 메일을 변경하고 사용자 정보 업데이트
-         * - 2.2. 접근한 email 과 조회된 email 이 같을 경우 -> 사용자 정보 반환
-         */
         return if (user == null) {
             processWhenUserIsNull(providerType, providerId, email)
         } else {
@@ -52,10 +49,7 @@ class UserService(
         val user = userRepository.findByEmail(email)
 
         if (user != null) {
-            throw CustomException(
-                ErrorType.CANNOT_CHANGE_EMAIL,
-                DomainCode.COMMON
-            )
+            throw CustomException(ErrorType.CANNOT_CHANGE_EMAIL, DomainCode.COMMON)
         }
 
         return userRepository.save(
@@ -73,10 +67,7 @@ class UserService(
             val userByEmail = userRepository.findByEmail(email)
 
             if (userByEmail != null) {
-                throw CustomException(
-                    ErrorType.ALREADY_EXIST_EMAIL,
-                    DomainCode.COMMON
-                )
+                throw CustomException(ErrorType.ALREADY_EXIST_EMAIL, DomainCode.COMMON)
             }
 
             users.email = email
@@ -86,9 +77,7 @@ class UserService(
         return users
     }
 
-    private fun getOauthInfo(
-        oAuth2User: OAuth2AuthenticationToken
-    ): Triple<ProviderType, String, String> {
+    private fun getOauthInfo(oAuth2User: OAuth2AuthenticationToken): Triple<ProviderType, String, String> {
         val providerType = getProviderType(oAuth2User)
         val providerId = getProviderId(oAuth2User.principal, providerType)
         val email = getEmail(oAuth2User.principal, providerType)
@@ -96,10 +85,7 @@ class UserService(
         return Triple(providerType, providerId, email)
     }
 
-    private fun getEmail(
-        oAuth2User: OAuth2User,
-        providerType: ProviderType
-    ): String {
+    private fun getEmail(oAuth2User: OAuth2User, providerType: ProviderType): String {
         if (providerType == ProviderType.GOOGLE) {
             return oAuth2User.getAttribute("email") as? String
                 ?: throw CustomException(
@@ -108,28 +94,16 @@ class UserService(
                 )
         }
 
-        throw CustomException(
-            ErrorType.INVALID_OAUTH2_PROVIDER,
-            DomainCode.COMMON
-        )
+        throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
     }
 
-    private fun getProviderId(
-        oAuth2User: OAuth2User,
-        providerType: ProviderType
-    ): String {
+    private fun getProviderId(oAuth2User: OAuth2User, providerType: ProviderType): String {
         if (providerType == ProviderType.GOOGLE) {
             return oAuth2User.getAttribute("sub") as? String
-                ?: throw CustomException(
-                    ErrorType.INVALID_OAUTH2_PROVIDER,
-                    DomainCode.COMMON
-                )
+                ?: throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
         }
 
-        throw CustomException(
-            ErrorType.INVALID_OAUTH2_PROVIDER,
-            DomainCode.COMMON
-        )
+        throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
     }
 
     private fun getProviderType(oAuth2User: OAuth2AuthenticationToken): ProviderType {
@@ -139,10 +113,7 @@ class UserService(
             .filter { it.name == provider }
             .findFirst()
             .orElseThrow {
-                throw CustomException(
-                    ErrorType.INVALID_OAUTH2_PROVIDER,
-                    DomainCode.COMMON
-                )
+                throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
             }
     }
 }

@@ -21,13 +21,19 @@ class SecurityConfig(
             .sessionManagement {
                 it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
+            .csrf {
+                it.disable()
+            }
+            .cors {
+                it.disable()
+            }
             .formLogin {
                 it.disable()
             }
             .authorizeHttpRequests {
-                it.requestMatchers(
-                    "/error"
-                ).permitAll()
+                SecurityConstants.PERMIT_URLS.forEach { pattern ->
+                    it.requestMatchers(pattern).permitAll()
+                }
                 it.anyRequest().authenticated()
             }
             .oauth2Login {

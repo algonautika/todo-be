@@ -14,8 +14,7 @@ import org.springframework.stereotype.Component
 class CustomAccessDeniedHandler : AccessDeniedHandler {
 
     companion object {
-        private val log =
-            LogManager.getLogger(CustomAccessDeniedHandler::class.java)
+        private val log = LogManager.getLogger(CustomAccessDeniedHandler::class.java)
     }
 
     override fun handle(

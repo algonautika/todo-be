@@ -26,4 +26,8 @@ class RefreshToken private constructor(
         users = users,
         refreshToken = refreshToken
     )
+
+    fun updateRefreshToken(refreshToken: String) {
+        this.refreshToken = refreshToken
+    }
 }

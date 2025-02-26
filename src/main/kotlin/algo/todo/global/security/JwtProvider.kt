@@ -50,12 +50,10 @@ class JwtProvider(
             .compact()
     }
 
+
     fun ensureValidToken(token: String) {
-        getAuthentication(token) ?: run {
-            throw CustomException(
-                ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON
-            )
+        getClaimsFromToken(token).getOrElse {
+            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
         }
     }
 
@@ -73,6 +71,7 @@ class JwtProvider(
             .compact()
     }
 
+    // accessToken 을 통해 Authentication 객체를 반환
     fun getAuthentication(accessToken: String): Authentication? {
         try {
             val claims = getClaimsFromToken(accessToken).getOrThrow()
@@ -103,13 +102,11 @@ class JwtProvider(
         val id = idLong.toLong()
 
         return kotlin.runCatching {
-            userRepository.findByIdAndEmail(id, email) ?: run {
-                log.warn("User not found")
-                throw CustomException(
-                    ErrorType.UNAUTHORIZED,
-                    DomainCode.COMMON
-                )
-            }
+            userRepository.findByIdAndEmail(id, email)
+                ?: run {
+                    log.warn("User not found")
+                    throw CustomException(ErrorType.UNAUTHORIZED, DomainCode.COMMON)
+                }
         }
     }
 

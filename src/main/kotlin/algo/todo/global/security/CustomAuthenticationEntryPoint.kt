@@ -17,9 +17,7 @@ import org.springframework.stereotype.Component
 class CustomAuthenticationEntryPoint : AuthenticationEntryPoint {
 
     companion object {
-        private val log = LogManager.getLogger(
-            CustomAuthenticationEntryPoint::class.java
-        )
+        private val log = LogManager.getLogger(CustomAuthenticationEntryPoint::class.java)
     }
 
     override fun commence(

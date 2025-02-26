@@ -13,9 +13,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
 
     companion object {
-        private val log = LogManager.getLogger(
-            GlobalExceptionHandler::class.java
-        )
+        private val log = LogManager.getLogger(GlobalExceptionHandler::class.java)
     }
 
     @ExceptionHandler(Exception::class)
@@ -48,9 +46,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
      */
     private fun printErrorMessage(e: Exception) {
         when (e) {
-            is NullPointerException -> log.error(e.printStackTrace())
-            is CustomException -> log.warn(e.printStackTrace())
-            else -> log.error(e.printStackTrace())
+            is NullPointerException -> log.error(e.stackTraceToString())
+            is CustomException -> {} // do nothing
+            else -> log.error(e.stackTraceToString())
         }
     }
 

@@ -1,11 +1,12 @@
 package algo.todo.global.security
 
+import algo.todo.domain.auth.service.AuthService
 import algo.todo.domain.user.service.UserService
 import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.util.CookieUtil
 import algo.todo.global.util.ExceptionUtil
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
@@ -14,19 +15,16 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.interceptor.TransactionAspectSupport
 
 @Component
 class OAuth2LoginSuccessHandler(
     private val userService: UserService,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val authService: AuthService
 ) : AuthenticationSuccessHandler {
 
     companion object {
-        private val log = LogManager.getLogger(
-            OAuth2LoginSuccessHandler::class.java
-        )
-        private const val ACCESS_TOKEN = "access_token"
+        private val log = LogManager.getLogger(OAuth2LoginSuccessHandler::class.java)
     }
 
     /**
@@ -39,58 +37,44 @@ class OAuth2LoginSuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication
     ) {
-        try {
-            val oAuth2User = getOauth2AuthenticationTokenFromAuthentication(
-                authentication
-            )
+        kotlin.runCatching {
+            val oAuth2User = getOauth2AuthenticationTokenFromAuthentication(authentication)
 
             val user = userService.loadOrCreateUser(oAuth2User)
 
-            val jwt = jwtProvider.generateAccessToken(user)
+            val accessToken = jwtProvider.generateAccessToken(user)
+            val refreshToken = jwtProvider.generateRefreshToken(user)
 
-            val cookie = createCookie(jwt)
+            CookieUtil.setAccessTokenAndRefreshTokenCookie(
+                response = response,
+                accessToken = accessToken,
+                refreshToken = refreshToken
+            )
 
-            response.addCookie(cookie)
+            authService.upsertRefreshToken(user, refreshToken)
+
             response.sendRedirect("http://localhost:5173")
-        } catch (e: Exception) {
-            log.error("${e.printStackTrace()}")
-            ExceptionUtil.writeErrorJson(
-                response,
-                ErrorType.UNCAUGHT_EXCEPTION,
-                DomainCode.USER
-            )
-            transactionRollback()
-        } catch (e: CustomException) {
-            log.warn("${e.printStackTrace()}")
-            ExceptionUtil.writeErrorJson(
-                response,
-                e.errorType,
-                e.domainCode
-            )
-            transactionRollback()
+        }.onFailure { e ->
+            when (e) {
+                is CustomException -> {
+                    ExceptionUtil.writeErrorJson(response, e.errorType, e.domainCode)
+                    throw e
+                }
+
+                else -> {
+                    log.error(e.stackTraceToString())
+                    ExceptionUtil.writeErrorJson(response, ErrorType.UNCAUGHT_EXCEPTION, DomainCode.USER)
+                    throw e
+                }
+            }
         }
     }
 
-    private fun transactionRollback() {
-        TransactionAspectSupport
-            .currentTransactionStatus()
-            .setRollbackOnly()
-    }
+    private fun getOauth2AuthenticationTokenFromAuthentication(authentication: Authentication)
+            : OAuth2AuthenticationToken =
+        authentication as? OAuth2AuthenticationToken ?: throw CustomException(
+            ErrorType.INVALID_OAUTH2_PROVIDER,
+            DomainCode.COMMON
+        )
 
-    private fun createCookie(jwt: String): Cookie {
-        val cookie = Cookie(ACCESS_TOKEN, jwt)
-        cookie.path = "/"
-        cookie.isHttpOnly = true
-        return cookie
-    }
-
-    private fun getOauth2AuthenticationTokenFromAuthentication(
-        authentication: Authentication
-    ): OAuth2AuthenticationToken {
-        return authentication as? OAuth2AuthenticationToken
-            ?: throw CustomException(
-                ErrorType.INVALID_OAUTH2_PROVIDER,
-                DomainCode.COMMON
-            )
-    }
 }
