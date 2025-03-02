@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 
 /src/main/resources
+todo.txt
 
 ### STS ###
 .apt_generated
