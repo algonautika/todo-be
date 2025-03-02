@@ -1,7 +1,7 @@
 package algo.todo.global.exception
 
-import algo.todo.global.dto.CommonResponseDto
 import algo.todo.global.dto.DomainCode
+import algo.todo.global.dto.ErrorResponse
 import org.apache.logging.log4j.LogManager
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,13 +17,12 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<CommonResponseDto> {
+    fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         printErrorMessage(e)
 
-        val dto = CommonResponseDto(
+        val dto = ErrorResponse(
             errorType = ErrorType.UNCAUGHT_EXCEPTION,
-            domainCode = DomainCode.COMMON,
-            data = null
+            domainCode = DomainCode.COMMON
         )
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -31,9 +30,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(CustomException::class)
-    fun handleCustomException(e: CustomException): ResponseEntity<CommonResponseDto> {
+    fun handleCustomException(e: CustomException): ResponseEntity<ErrorResponse> {
         printErrorMessage(e)
-        val dto = CommonResponseDto(
+        val dto = ErrorResponse(
             exception = e
         )
         return ResponseEntity

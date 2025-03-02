@@ -1,7 +1,7 @@
 package algo.todo.global.util
 
-import algo.todo.global.dto.CommonResponseDto
 import algo.todo.global.dto.DomainCode
+import algo.todo.global.dto.ErrorResponse
 import algo.todo.global.exception.ErrorType
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
@@ -16,10 +16,9 @@ class ExceptionUtil {
             errorType: ErrorType,
             domainCode: DomainCode
         ) {
-            val dto = CommonResponseDto(
+            val dto = ErrorResponse(
                 errorType = errorType,
-                domainCode = domainCode,
-                data = null
+                domainCode = domainCode
             )
 
             val json = ObjectMapper().writeValueAsString(dto)

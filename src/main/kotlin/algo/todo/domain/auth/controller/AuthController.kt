@@ -2,11 +2,10 @@ package algo.todo.domain.auth.controller
 
 import algo.todo.domain.auth.dto.request.ReIssueRequestDto
 import algo.todo.domain.auth.service.AuthService
-import algo.todo.global.dto.CommonResponseDto
+import algo.todo.global.dto.ApiSuccessResponse
 import algo.todo.global.util.CookieUtil
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -21,7 +20,7 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun refreshToken(@RequestBody @Valid requestDto: ReIssueRequestDto, response: HttpServletResponse)
-            : ResponseEntity<CommonResponseDto> {
+            : ResponseEntity<ApiSuccessResponse> {
         val reIssueToken = authService.reIssueToken(requestDto)
 
         CookieUtil.setAccessTokenAndRefreshTokenCookie(
@@ -31,8 +30,7 @@ class AuthController(
         )
 
         return ResponseEntity.ok().body(
-            CommonResponseDto(
-                status = HttpStatus.OK,
+            ApiSuccessResponse(
                 data = reIssueToken
             )
         )
