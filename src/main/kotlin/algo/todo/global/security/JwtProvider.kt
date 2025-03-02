@@ -72,8 +72,8 @@ class JwtProvider(
     }
 
     // accessToken 을 통해 Authentication 객체를 반환
-    fun getAuthentication(accessToken: String): Authentication? {
-        try {
+    fun getAuthentication(accessToken: String): Result<Authentication?> =
+        runCatching {
             val claims = getClaimsFromToken(accessToken).getOrThrow()
 
             ensureIsAccessToken(claims)
@@ -82,18 +82,21 @@ class JwtProvider(
 
             val userDetails = CustomUserDetails(user, claims)
 
-            return UsernamePasswordAuthenticationToken(
+            UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
                 userDetails.authorities
             )
-        } catch (e: Exception) {
-            log.error(e.stackTraceToString())
-            return null
-        } catch (e: CustomException) {
-            return null
+        }.onFailure {
+            when (it) {
+                is CustomException -> {
+                }
+
+                else -> {
+                    log.error(it.stackTraceToString())
+                }
+            }
         }
-    }
 
     private fun getUserFromClaims(claims: Map<String, Any>): Result<Users> {
         val idLong = claims["id"] as Int
@@ -111,7 +114,9 @@ class JwtProvider(
     }
 
     private fun ensureIsAccessToken(claims: Map<String, Any>) {
-        val tokenType = claims["token_type"] as TokenType
+        val tokenTypeString = claims["token_type"] as String
+        val tokenType = TokenType.valueOf(tokenTypeString)
+
 
         if (tokenType != TokenType.ACCESS) {
             throw CustomException(

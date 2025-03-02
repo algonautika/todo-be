@@ -37,7 +37,7 @@ class OAuth2LoginSuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication
     ) {
-        kotlin.runCatching {
+        runCatching {
             val oAuth2User = getOauth2AuthenticationTokenFromAuthentication(authentication)
 
             val user = userService.loadOrCreateUser(oAuth2User)
@@ -54,17 +54,17 @@ class OAuth2LoginSuccessHandler(
             authService.upsertRefreshToken(user, refreshToken)
 
             response.sendRedirect("http://localhost:5173")
-        }.onFailure { e ->
-            when (e) {
+        }.onFailure {
+            when (it) {
                 is CustomException -> {
-                    ExceptionUtil.writeErrorJson(response, e.errorType, e.domainCode)
-                    throw e
+                    ExceptionUtil.writeErrorJson(response, it.errorType, it.domainCode)
+                    throw it
                 }
 
                 else -> {
-                    log.error(e.stackTraceToString())
+                    log.error(it.stackTraceToString())
                     ExceptionUtil.writeErrorJson(response, ErrorType.UNCAUGHT_EXCEPTION, DomainCode.USER)
-                    throw e
+                    throw it
                 }
             }
         }
