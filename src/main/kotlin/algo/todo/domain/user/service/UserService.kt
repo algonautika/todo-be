@@ -41,6 +41,9 @@ class UserService(
         }
     }
 
+    /**
+     * 사용자 정보가 없을 경우 사용자 정보 생성
+     */
     private fun processWhenUserIsNull(
         providerType: ProviderType,
         providerId: String,
@@ -61,6 +64,9 @@ class UserService(
         )
     }
 
+    /**
+     * 사용자 정보가 있을 경우 사용자 정보 업데이트
+     */
     private fun processWhenUserIsNotNull(users: Users, email: String): Users {
         // 접근한 email 과 조회된 email 이 다를 경우
         if (users.email != email) {
@@ -79,31 +85,23 @@ class UserService(
 
     private fun getOauthInfo(oAuth2User: OAuth2AuthenticationToken): Triple<ProviderType, String, String> {
         val providerType = getProviderType(oAuth2User)
-        val providerId = getProviderId(oAuth2User.principal, providerType)
-        val email = getEmail(oAuth2User.principal, providerType)
+        val providerId = getProviderId(oAuth2User.principal)
+        val email = getEmail(oAuth2User.principal)
 
         return Triple(providerType, providerId, email)
     }
 
-    private fun getEmail(oAuth2User: OAuth2User, providerType: ProviderType): String {
-        if (providerType == ProviderType.GOOGLE) {
-            return oAuth2User.getAttribute("email") as? String
-                ?: throw CustomException(
-                    ErrorType.INVALID_OAUTH2_PROVIDER,
-                    DomainCode.COMMON
-                )
-        }
-
-        throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
+    private fun getEmail(oAuth2User: OAuth2User): String {
+        return oAuth2User.getAttribute("email") as? String
+            ?: throw CustomException(
+                ErrorType.INVALID_OAUTH2_PROVIDER,
+                DomainCode.COMMON
+            )
     }
 
-    private fun getProviderId(oAuth2User: OAuth2User, providerType: ProviderType): String {
-        if (providerType == ProviderType.GOOGLE) {
-            return oAuth2User.getAttribute("sub") as? String
-                ?: throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
-        }
-
-        throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
+    private fun getProviderId(oAuth2User: OAuth2User): String {
+        return oAuth2User.getAttribute("sub") as? String
+            ?: throw CustomException(ErrorType.INVALID_OAUTH2_PROVIDER, DomainCode.COMMON)
     }
 
     private fun getProviderType(oAuth2User: OAuth2AuthenticationToken): ProviderType {
