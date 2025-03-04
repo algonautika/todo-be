@@ -90,17 +90,26 @@ class JwtProvider(
         }.onFailure {
             when (it) {
                 is CustomException -> {
+                    throw it
                 }
 
                 else -> {
                     log.error(it.stackTraceToString())
+                    throw CustomException(ErrorType.UNCAUGHT_EXCEPTION, DomainCode.COMMON)
                 }
             }
         }
 
     private fun getUserFromClaims(claims: Map<String, Any>): Result<Users> {
-        val idLong = claims["id"] as Int
-        val email = claims["sub"] as String
+        val idLong = claims["id"]
+        val email = claims["sub"]
+
+        if (idLong !is Int || email !is String) {
+            throw CustomException(
+                ErrorType.INVALID_TOKEN,
+                DomainCode.COMMON
+            )
+        }
 
         val id = idLong.toLong()
 
@@ -108,7 +117,7 @@ class JwtProvider(
             userRepository.findByIdAndEmail(id, email)
                 ?: run {
                     log.warn("User not found")
-                    throw CustomException(ErrorType.UNAUTHORIZED, DomainCode.COMMON)
+                    throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
                 }
         }
     }
@@ -120,7 +129,7 @@ class JwtProvider(
 
         if (tokenType != TokenType.ACCESS) {
             throw CustomException(
-                ErrorType.UNAUTHORIZED,
+                ErrorType.INVALID_TOKEN,
                 DomainCode.COMMON
             )
         }

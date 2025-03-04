@@ -5,6 +5,8 @@ import algo.todo.domain.user.repository.UserRepository
 import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -13,7 +15,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.springframework.test.util.ReflectionTestUtils
 
-class JwtTokenUnitTest : DescribeSpec({
+class JwtProviderUnitTest : DescribeSpec({
 
     val userRepository = mockk<UserRepository>()
 
@@ -80,13 +82,8 @@ class JwtTokenUnitTest : DescribeSpec({
                 val user = createTestUser()
                 val accessToken = jwtProvider.generateAccessToken(user)
 
-                // when
-                val result = runCatching {
-                    jwtProvider.ensureValidToken(accessToken)
-                }
-
-                // then
-                result.isSuccess shouldBe true
+                // when & then
+                jwtProvider.ensureValidToken(accessToken)
             }
         }
 
@@ -125,20 +122,23 @@ class JwtTokenUnitTest : DescribeSpec({
             }
 
             context("유효하지 않은 Access Token 일 때") {
-                it("null 을 반환한다") {
+                it("CustomException[INVALID_TOKEN] 이 발생한다") {
                     // given
                     val invalidToken = "xx.yy.zz"
 
                     // when
-                    val auth = jwtProvider.getAuthentication(invalidToken)
+                    val ex = shouldThrow<CustomException> {
+                        jwtProvider.getAuthentication(invalidToken)
+                    }
 
                     // then
-                    auth.isFailure shouldBe true
+                    ex.errorType shouldBe ErrorType.INVALID_TOKEN
+                    ex.domainCode shouldBe DomainCode.COMMON
                 }
             }
 
             context("유효한 토큰이지만 사용자 조회에 실패한 경우") {
-                it("null 을 반환한다") {
+                it("CustomException[INVALID_TOKEN] 이 발생한다") {
                     // given
                     val user = createTestUser()
                     val token = jwtProvider.generateAccessToken(user)
@@ -146,24 +146,52 @@ class JwtTokenUnitTest : DescribeSpec({
                     every { userRepository.findByIdAndEmail(any(), any()) } returns null
 
                     // when
-                    val auth = jwtProvider.getAuthentication(token)
+                    val ex = shouldThrow<CustomException> {
+                        jwtProvider.getAuthentication(token)
+                    }
 
                     // then
-                    auth.isFailure shouldBe true
+                    ex.errorType shouldBe ErrorType.INVALID_TOKEN
+                    ex.domainCode shouldBe DomainCode.COMMON
                 }
             }
 
             context("Refresh Token 을 전달한 경우") {
-                it("ensureIsAccessToken 에서 실패하여 null 을 반환한다") {
+                it("ensureIsAccessToken 에서 실패하여 CustomException[INVALID_TOKEN] 이 발생한다") {
                     // given
                     val user = createTestUser()
                     val refreshToken = jwtProvider.generateRefreshToken(user)
 
                     // when
-                    val auth = jwtProvider.getAuthentication(refreshToken)
+                    val ex = shouldThrow<CustomException> {
+                        jwtProvider.getAuthentication(refreshToken)
+                    }
 
                     // then
-                    auth.isFailure shouldBe true
+                    ex.errorType shouldBe ErrorType.INVALID_TOKEN
+                    ex.domainCode shouldBe DomainCode.COMMON
+                }
+            }
+
+            context("필수 claims 가 존재하지 않을 경우") {
+                it("CustomException[INVALID_TOKEN] 이 발생한다") {
+                    // given
+                    val key = Keys.hmacShaKeyFor(secretKey.toByteArray())
+
+                    val invalidToken = Jwts.builder()
+//                        .claim("id", 1L) // id 는 필수 claim
+                        .claim("token_type", TokenType.ACCESS)
+                        .subject("testUser@gmail.com")
+                        .signWith(key)
+                        .compact()
+
+                    // when & then
+                    val ex = shouldThrow<CustomException> {
+                        jwtProvider.getAuthentication(invalidToken)
+                    }
+
+                    ex.errorType shouldBe ErrorType.INVALID_TOKEN
+                    ex.domainCode shouldBe DomainCode.COMMON
                 }
             }
         }
