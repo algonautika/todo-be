@@ -7,16 +7,16 @@ import jakarta.persistence.*
 @Table(name = "refresh_token")
 class RefreshToken private constructor(
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:Id
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    val users: Users,
+    @field:OneToOne(fetch = FetchType.LAZY)
+    @field:JoinColumn(name = "user_id")
+    var users: Users,
 
-    @Column(name = "refresh_token")
-    var refreshToken: String,
+    @field:Column(name = "refresh_token")
+    var refreshToken: String
 ) {
     constructor(
         users: Users,

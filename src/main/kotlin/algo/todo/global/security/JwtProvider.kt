@@ -126,7 +126,6 @@ class JwtProvider(
         val tokenTypeString = claims["token_type"] as String
         val tokenType = TokenType.valueOf(tokenTypeString)
 
-
         if (tokenType != TokenType.ACCESS) {
             throw CustomException(
                 ErrorType.INVALID_TOKEN,
@@ -137,7 +136,6 @@ class JwtProvider(
 
     private fun getClaimsFromToken(token: String): Result<Map<String, Any>> =
         runCatching {
-            // 블록 안에서 어떤 예외가 발생해도 runCatching -> Result.Failure(...)가 됨
             Jwts.parser()
                 .verifyWith(key)
                 .build()

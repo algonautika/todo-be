@@ -9,22 +9,22 @@ import java.time.LocalDateTime
 @Table(name = "users")
 class Users private constructor(
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:Id
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @Column(name = "email")
+    @field:Column(name = "email")
     var email: String,
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "provider")
+    @field:Enumerated(EnumType.STRING)
+    @field:Column(name = "provider")
     val providerType: ProviderType,
 
-    @Column(name = "provider_id")
+    @field:Column(name = "provider_id")
     val providerId: String,
 
-    @CreationTimestamp
-    @Column(name = "created_at")
+    @field:CreationTimestamp
+    @field:Column(name = "created_at")
     val createdAt: LocalDateTime
 ) {
     constructor(
