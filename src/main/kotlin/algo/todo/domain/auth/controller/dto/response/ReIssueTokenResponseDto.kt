@@ -1,4 +1,4 @@
-package algo.todo.domain.auth.dto.response
+package algo.todo.domain.auth.controller.dto.response
 
 data class ReIssueTokenResponseDto(
     val accessToken: String,

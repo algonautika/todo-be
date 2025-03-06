@@ -1,7 +1,7 @@
 package algo.todo.domain.auth.service
 
-import algo.todo.domain.auth.dto.request.ReIssueRequestDto
-import algo.todo.domain.auth.dto.response.ReIssueTokenResponseDto
+import algo.todo.domain.auth.controller.dto.request.ReIssueRequestDto
+import algo.todo.domain.auth.controller.dto.response.ReIssueTokenResponseDto
 import algo.todo.domain.auth.entity.RefreshToken
 import algo.todo.domain.auth.repository.AuthRepository
 import algo.todo.domain.user.entity.Users

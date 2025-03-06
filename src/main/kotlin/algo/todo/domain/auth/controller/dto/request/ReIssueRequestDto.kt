@@ -1,4 +1,4 @@
-package algo.todo.domain.auth.dto.request
+package algo.todo.domain.auth.controller.dto.request
 
 import jakarta.validation.constraints.NotBlank
 
