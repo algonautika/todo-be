@@ -17,6 +17,6 @@ class UserController {
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ResponseEntity<ApiSuccessResponse> {
         val userProfile = UserProfileResponse(userDetails.users)
-        return ResponseEntity.ok(ApiSuccessResponse(userProfile));
+        return ResponseEntity.ok(ApiSuccessResponse(userProfile))
     }
 }

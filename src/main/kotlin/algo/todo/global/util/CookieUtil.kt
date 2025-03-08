@@ -11,8 +11,8 @@ class CookieUtil {
 
     companion object {
         private const val SET_COOKIE = "Set-Cookie"
-        private const val ACCESS_TOKEN = "access_token";
-        private const val REFRESH_TOKEN = "refresh_token";
+        private const val ACCESS_TOKEN = "access_token"
+        private const val REFRESH_TOKEN = "refresh_token"
 
         fun setAccessTokenAndRefreshTokenCookie(
             response: HttpServletResponse,
