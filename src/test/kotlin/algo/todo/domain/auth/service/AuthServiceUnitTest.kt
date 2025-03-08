@@ -1,6 +1,5 @@
 package algo.todo.domain.auth.service
 
-import algo.todo.domain.auth.controller.dto.request.ReIssueRequestDto
 import algo.todo.domain.auth.entity.RefreshToken
 import algo.todo.domain.auth.repository.AuthRepository
 import algo.todo.domain.user.entity.Users
@@ -38,8 +37,6 @@ class AuthServiceUnitTest : DescribeSpec({
                     refreshToken = refreshTokenValue
                 )
 
-                val requestDto = ReIssueRequestDto(refreshTokenValue)
-
                 every { authRepository.findByRefreshToken(refreshTokenValue) } returns savedRefreshToken
                 every { jwtProvider.ensureValidToken(refreshTokenValue) } returns Unit
 
@@ -49,7 +46,7 @@ class AuthServiceUnitTest : DescribeSpec({
                 every { jwtProvider.generateRefreshToken(user) } returns newRefreshToken
 
                 // when
-                val result = authService.reIssueToken(requestDto)
+                val result = authService.reIssueToken(refreshTokenValue)
 
                 // then
                 result.accessToken shouldBe newAccessToken
@@ -68,7 +65,7 @@ class AuthServiceUnitTest : DescribeSpec({
         context("존재하지 않는 refreshToken") {
             it("CustomException(INVALID_TOKEN)을 던진다") {
                 // given
-                val requestDto = ReIssueRequestDto("nonexistentToken")
+                val requestDto = "nonexistentToken"
                 every { authRepository.findByRefreshToken("nonexistentToken") } returns null
 
                 // when & then
@@ -94,7 +91,6 @@ class AuthServiceUnitTest : DescribeSpec({
                     users = user,
                     refreshToken = invalidTokenValue
                 )
-                val requestDto = ReIssueRequestDto(invalidTokenValue)
 
                 every { authRepository.findByRefreshToken(invalidTokenValue) } returns refreshTokenEntity
                 // ensureValidToken이 예외 발생
@@ -105,7 +101,7 @@ class AuthServiceUnitTest : DescribeSpec({
 
                 // when & then
                 val ex = shouldThrow<CustomException> {
-                    authService.reIssueToken(requestDto)
+                    authService.reIssueToken(invalidTokenValue)
                 }
                 ex.errorType shouldBe ErrorType.INVALID_TOKEN
                 ex.domainCode shouldBe DomainCode.COMMON

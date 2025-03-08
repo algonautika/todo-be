@@ -13,6 +13,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.test.util.ReflectionTestUtils
 
 class JwtProviderUnitTest : DescribeSpec({
@@ -103,6 +104,8 @@ class JwtProviderUnitTest : DescribeSpec({
         }
 
         describe("getAuthentication 메서드") {
+            val response = mockk<HttpServletResponse>(relaxed = true)
+
             context("유효한 Access Token 이면서, DB 에서 사용자 조회에 성공한 경우") {
                 it("Authentication 객체를 반환한다") {
                     // given
@@ -112,7 +115,7 @@ class JwtProviderUnitTest : DescribeSpec({
                     every { userRepository.findByIdAndEmail(1L, "test@example.com") } returns user
 
                     // when
-                    val result = jwtProvider.getAuthentication(token)
+                    val result = jwtProvider.getAuthentication(token, response)
 
                     // then
                     result.isSuccess shouldBe true
@@ -128,7 +131,7 @@ class JwtProviderUnitTest : DescribeSpec({
 
                     // when
                     val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(invalidToken)
+                        jwtProvider.getAuthentication(invalidToken, response)
                     }
 
                     // then
@@ -147,7 +150,7 @@ class JwtProviderUnitTest : DescribeSpec({
 
                     // when
                     val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(token)
+                        jwtProvider.getAuthentication(token, response)
                     }
 
                     // then
@@ -164,7 +167,7 @@ class JwtProviderUnitTest : DescribeSpec({
 
                     // when
                     val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(refreshToken)
+                        jwtProvider.getAuthentication(refreshToken, response)
                     }
 
                     // then
@@ -187,7 +190,7 @@ class JwtProviderUnitTest : DescribeSpec({
 
                     // when & then
                     val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(invalidToken)
+                        jwtProvider.getAuthentication(invalidToken, response)
                     }
 
                     ex.errorType shouldBe ErrorType.INVALID_TOKEN
