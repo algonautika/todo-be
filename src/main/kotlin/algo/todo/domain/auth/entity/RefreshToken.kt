@@ -11,12 +11,12 @@ class RefreshToken private constructor(
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @field:OneToOne(fetch = FetchType.LAZY)
+    @field:OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @field:JoinColumn(name = "user_id")
     var users: Users,
 
     @field:Column(name = "refresh_token")
-    var refreshToken: String
+    var refreshToken: String? = null
 ) {
     constructor(
         users: Users,

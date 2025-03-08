@@ -1,5 +1,6 @@
 package algo.todo.domain.user.entity
 
+import algo.todo.domain.auth.entity.RefreshToken
 import algo.todo.global.security.ProviderType
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
@@ -25,7 +26,11 @@ class Users private constructor(
 
     @field:CreationTimestamp
     @field:Column(name = "created_at")
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+
+    @field:OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @field:JoinColumn(name = "refresh_token_id")
+    var refreshToken: RefreshToken? = null
 ) {
     constructor(
         email: String,

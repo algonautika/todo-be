@@ -19,7 +19,6 @@ class AuthService(
 
     @Transactional
     fun reIssueToken(refreshToken: String): ReIssueTokenResponseDto {
-        println("refreshToken: $refreshToken")
         // 1. refreshToken 조회
         val findRefreshToken = authRepository.findByRefreshToken(refreshToken)
             ?: throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
