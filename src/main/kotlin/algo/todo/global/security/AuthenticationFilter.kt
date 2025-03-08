@@ -22,7 +22,7 @@ class AuthenticationFilter(
         filterChain: FilterChain
     ) {
         getAccessTokenFromRequest(request)?.let { token ->
-            tokenProvider.getAuthentication(token).onSuccess { auth ->
+            tokenProvider.getAuthentication(token, response).onSuccess { auth ->
                 SecurityContextHolder.getContext().authentication = auth
             }
         }

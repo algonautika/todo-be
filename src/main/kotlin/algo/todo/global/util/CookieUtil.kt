@@ -1,6 +1,5 @@
 package algo.todo.global.util
 
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletResponse
 
 class CookieUtil {
@@ -14,16 +13,20 @@ class CookieUtil {
             accessToken: String,
             refreshToken: String
         ) {
-            val accessTokenCookie = Cookie(ACCESS_TOKEN, accessToken)
-            val refreshTokenCookie = Cookie(REFRESH_TOKEN, refreshToken)
+            val accessCookieValue = buildCookieHeader(ACCESS_TOKEN, accessToken)
+            response.addHeader("Set-Cookie", accessCookieValue)
 
-            accessTokenCookie.isHttpOnly = true
-            accessTokenCookie.path = "/"
-            refreshTokenCookie.isHttpOnly = true
-            refreshTokenCookie.path = "/"
+            val refreshCookieValue = buildCookieHeader(REFRESH_TOKEN, refreshToken)
+            response.addHeader("Set-Cookie", refreshCookieValue)
+        }
 
-            response.addCookie(accessTokenCookie)
-            response.addCookie(refreshTokenCookie)
+
+        /**
+         * 쿠키의 전체 문자열을 구성:
+         * name=value; Path=/; HttpOnly; SameSite=None; Secure
+         */
+        private fun buildCookieHeader(name: String, value: String): String {
+            return "$name=$value; Path=/; HttpOnly; SameSite=None; Secure"
         }
     }
 
