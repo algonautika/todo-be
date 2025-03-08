@@ -5,8 +5,8 @@ import algo.todo.domain.user.service.UserService
 import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.exception.FailureHandler
 import algo.todo.global.util.CookieUtil
-import algo.todo.global.util.ExceptionUtil
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
@@ -55,18 +55,7 @@ class OAuth2LoginSuccessHandler(
 
             response.sendRedirect("http://localhost:5173")
         }.onFailure {
-            when (it) {
-                is CustomException -> {
-                    ExceptionUtil.writeErrorJson(response, it.errorType, it.domainCode)
-                    throw it
-                }
-
-                else -> {
-                    log.error(it.stackTraceToString())
-                    ExceptionUtil.writeErrorJson(response, ErrorType.UNCAUGHT_EXCEPTION, DomainCode.USER)
-                    throw it
-                }
-            }
+            FailureHandler.handleFailure(it, response)
         }
     }
 

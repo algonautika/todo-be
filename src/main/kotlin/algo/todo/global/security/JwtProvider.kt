@@ -5,8 +5,10 @@ import algo.todo.domain.user.repository.UserRepository
 import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.exception.FailureHandler
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
+import jakarta.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -72,7 +74,7 @@ class JwtProvider(
     }
 
     // accessToken 을 통해 Authentication 객체를 반환
-    fun getAuthentication(accessToken: String): Result<Authentication?> =
+    fun getAuthentication(accessToken: String, response: HttpServletResponse): Result<Authentication?> =
         runCatching {
             val claims = getClaimsFromToken(accessToken).getOrThrow()
 
@@ -88,16 +90,7 @@ class JwtProvider(
                 userDetails.authorities
             )
         }.onFailure {
-            when (it) {
-                is CustomException -> {
-                    throw it
-                }
-
-                else -> {
-                    log.error(it.stackTraceToString())
-                    throw CustomException(ErrorType.UNCAUGHT_EXCEPTION, DomainCode.COMMON)
-                }
-            }
+            FailureHandler.handleFailure(it, response)
         }
 
     private fun getUserFromClaims(claims: Map<String, Any>): Result<Users> {
