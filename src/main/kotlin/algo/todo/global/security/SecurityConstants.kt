@@ -5,6 +5,6 @@ object SecurityConstants {
         "/favicon.ico",
         "/login",
         "/error",
-        "/api/auth/refresh"
+        "/v1/auth/refresh"
     )
 }
