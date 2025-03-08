@@ -7,9 +7,9 @@ import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
 import algo.todo.global.exception.FailureHandler
 import algo.todo.global.util.CookieUtil
+import jakarta.persistence.EntityManager
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.apache.logging.log4j.LogManager
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
@@ -18,14 +18,11 @@ import org.springframework.transaction.annotation.Transactional
 
 @Component
 class OAuth2LoginSuccessHandler(
+    private val entityManager: EntityManager,
     private val userService: UserService,
     private val jwtProvider: JwtProvider,
     private val authService: AuthService
 ) : AuthenticationSuccessHandler {
-
-    companion object {
-        private val log = LogManager.getLogger(OAuth2LoginSuccessHandler::class.java)
-    }
 
     /**
      * OAuth2 로그인 성공 시 호출되는 메서드

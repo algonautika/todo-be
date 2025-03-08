@@ -2,7 +2,9 @@ package algo.todo.domain.auth.entity
 
 import algo.todo.domain.user.entity.Users
 import jakarta.persistence.*
+import org.hibernate.envers.Audited
 
+@Audited
 @Entity
 @Table(name = "refresh_token")
 class RefreshToken private constructor(
