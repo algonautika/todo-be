@@ -1,7 +1,7 @@
 package algo.todo.global.util
 
+import algo.todo.global.dto.ApiErrorResponse
 import algo.todo.global.dto.DomainCode
-import algo.todo.global.dto.ErrorResponse
 import algo.todo.global.exception.ErrorType
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletResponse
@@ -16,7 +16,7 @@ class ExceptionUtil {
             errorType: ErrorType,
             domainCode: DomainCode
         ) {
-            val dto = ErrorResponse(
+            val dto = ApiErrorResponse(
                 errorType = errorType,
                 domainCode = domainCode
             )

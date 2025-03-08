@@ -1,7 +1,7 @@
 package algo.todo.global.exception
 
+import algo.todo.global.dto.ApiErrorResponse
 import algo.todo.global.dto.DomainCode
-import algo.todo.global.dto.ErrorResponse
 import org.apache.logging.log4j.LogManager
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -21,10 +21,10 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
+    fun handleException(e: Exception): ResponseEntity<ApiErrorResponse> {
         printErrorMessage(e)
 
-        val dto = ErrorResponse(
+        val dto = ApiErrorResponse(
             errorType = ErrorType.UNCAUGHT_EXCEPTION,
             domainCode = DomainCode.COMMON
         )
@@ -34,9 +34,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(CustomException::class)
-    fun handleCustomException(e: CustomException): ResponseEntity<ErrorResponse> {
+    fun handleCustomException(e: CustomException): ResponseEntity<ApiErrorResponse> {
         printErrorMessage(e)
-        val dto = ErrorResponse(
+        val dto = ApiErrorResponse(
             exception = e
         )
         return ResponseEntity
@@ -50,11 +50,11 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         status: HttpStatusCode,
         request: WebRequest
     ): ResponseEntity<Any>? {
-        val errorResponse = ErrorResponse(
+        val apiErrorResponse = ApiErrorResponse(
             ErrorType.NOT_FOUND,
             DomainCode.COMMON
         )
-        return ResponseEntity(errorResponse, HttpStatus.NOT_FOUND)
+        return ResponseEntity(apiErrorResponse, HttpStatus.NOT_FOUND)
     }
 
 

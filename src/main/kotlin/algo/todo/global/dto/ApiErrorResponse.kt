@@ -3,7 +3,7 @@ package algo.todo.global.dto
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
 
-class ErrorResponse private constructor(
+class ApiErrorResponse private constructor(
     val status: String,
     val message: String
 ) {
