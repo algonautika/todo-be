@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
@@ -29,11 +30,10 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     fun handleException(e: Exception): ResponseEntity<ApiResponse> {
         printErrorMessage(e)
 
-        val response =
-            ApiResponse.error(
-                errorType = ErrorType.UNCAUGHT_EXCEPTION,
-                domainCode = DomainCode.COMMON,
-            )
+        val response = ApiResponse.error(
+            errorType = ErrorType.UNCAUGHT_EXCEPTION,
+            domainCode = DomainCode.COMMON,
+        )
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(response)
@@ -42,15 +42,31 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(CustomException::class)
     fun handleCustomException(e: CustomException): ResponseEntity<ApiResponse> {
         printErrorMessage(e)
-        val response =
-            ApiResponse.error(
-                exception = e,
-            )
+        val response = ApiResponse.error(
+            exception = e,
+        )
         return ResponseEntity
             .status(e.errorType.status)
             .body(response)
     }
 
+    // 400 Bad Request (JSON 형식이 잘못된 경우)
+    override fun handleHttpMessageNotReadable(
+        e: HttpMessageNotReadableException,
+        headers: HttpHeaders,
+        status: HttpStatusCode,
+        request: WebRequest,
+    ): ResponseEntity<Any> {
+        printErrorMessage(e)
+        val response = ApiResponse.error(
+            errorType = ErrorType.BAD_REQUEST,
+            domainCode = DomainCode.COMMON,
+        )
+
+        return ResponseEntity.badRequest().body(response)
+    }
+
+    // 404 Not Found
     override fun handleNoHandlerFoundException(
         ex: NoHandlerFoundException,
         headers: HttpHeaders,
