@@ -50,9 +50,7 @@ class JwtProvider(
     }
 
     fun ensureValidToken(token: String) {
-        getClaimsFromToken(token).getOrElse {
-            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
-        }
+        getClaimsFromToken(token)
     }
 
     fun generateRefreshToken(users: Users): String {
@@ -75,11 +73,11 @@ class JwtProvider(
         response: HttpServletResponse,
     ): Result<Authentication?> =
         runCatching {
-            val claims = getClaimsFromToken(accessToken).getOrThrow()
+            val claims = getClaimsFromToken(accessToken)
 
             ensureIsAccessToken(claims)
 
-            val user = getUserFromClaims(claims).getOrThrow()
+            val user = getUserFromClaims(claims)
 
             val userDetails = CustomUserDetails(user, claims)
 
@@ -92,7 +90,7 @@ class JwtProvider(
             FailureHandler.handleFailure(it, response)
         }
 
-    private fun getUserFromClaims(claims: Map<String, Any>): Result<Users> {
+    private fun getUserFromClaims(claims: Map<String, Any>): Users {
         val idLong = claims["id"]
         val email = claims["sub"]
 
@@ -105,12 +103,9 @@ class JwtProvider(
 
         val id = idLong.toLong()
 
-        return kotlin.runCatching {
-            userRepository.findByIdAndEmail(id, email)
-                ?: run {
-                    log.warn("User not found")
-                    throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
-                }
+        return checkNotNull(userRepository.findByIdAndEmail(id, email)) {
+            log.warn("User not found")
+            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
         }
     }
 
@@ -126,18 +121,15 @@ class JwtProvider(
         }
     }
 
-    private fun getClaimsFromToken(token: String): Result<Map<String, Any>> =
+    private fun getClaimsFromToken(token: String): Map<String, Any> =
         runCatching {
             Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .payload
-        }.recoverCatching { e ->
-            log.error(e.stackTraceToString())
-            throw CustomException(
-                ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON,
-            )
-        }
+        }.onFailure {
+            log.warn("token parsing failed: ${it.message}")
+            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
+        }.getOrThrow()
 }

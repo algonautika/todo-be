@@ -19,9 +19,9 @@ class AuthService(
     @Transactional
     fun reIssueToken(refreshToken: String): ReIssueTokenResponse {
         // 1. refreshToken 조회
-        val findRefreshToken =
-            authRepository.findByRefreshToken(refreshToken)
-                ?: throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
+        val findRefreshToken = checkNotNull(authRepository.findByRefreshToken(refreshToken)) {
+            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
+        }
 
         // 2. refreshToken 유효성 확인
         jwtProvider.ensureValidToken(refreshToken)
