@@ -2,10 +2,10 @@ package algo.todo.global.security
 
 import algo.todo.domain.user.entity.Users
 import algo.todo.domain.user.repository.UserRepository
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
 import algo.todo.global.exception.FailureHandler
+import algo.todo.global.response.DomainCode
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletResponse
@@ -21,14 +21,11 @@ import javax.crypto.SecretKey
 class JwtProvider(
     @Value("\${jwt.secret}")
     private val secret: String,
-
     @Value("\${jwt.access-token-expiration}")
     private val accessTokenExpirationInMillis: Long,
-
     @Value("\${jwt.refresh-token-expiration}")
     private val refreshTokenExpirationInMillis: Long,
-
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     private val key: SecretKey by lazy {
         Keys.hmacShaKeyFor(secret.toByteArray())
@@ -52,7 +49,6 @@ class JwtProvider(
             .compact()
     }
 
-
     fun ensureValidToken(token: String) {
         getClaimsFromToken(token).getOrElse {
             throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
@@ -74,7 +70,10 @@ class JwtProvider(
     }
 
     // accessToken 을 통해 Authentication 객체를 반환
-    fun getAuthentication(accessToken: String, response: HttpServletResponse): Result<Authentication?> =
+    fun getAuthentication(
+        accessToken: String,
+        response: HttpServletResponse,
+    ): Result<Authentication?> =
         runCatching {
             val claims = getClaimsFromToken(accessToken).getOrThrow()
 
@@ -87,7 +86,7 @@ class JwtProvider(
             UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
-                userDetails.authorities
+                userDetails.authorities,
             )
         }.onFailure {
             FailureHandler.handleFailure(it, response)
@@ -100,7 +99,7 @@ class JwtProvider(
         if (idLong !is Int || email !is String) {
             throw CustomException(
                 ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON
+                DomainCode.COMMON,
             )
         }
 
@@ -122,7 +121,7 @@ class JwtProvider(
         if (tokenType != TokenType.ACCESS) {
             throw CustomException(
                 ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON
+                DomainCode.COMMON,
             )
         }
     }
@@ -138,7 +137,7 @@ class JwtProvider(
             log.error(e.stackTraceToString())
             throw CustomException(
                 ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON
+                DomainCode.COMMON,
             )
         }
 }

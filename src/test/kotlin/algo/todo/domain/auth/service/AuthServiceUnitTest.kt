@@ -3,9 +3,9 @@ package algo.todo.domain.auth.service
 import algo.todo.domain.auth.entity.RefreshToken
 import algo.todo.domain.auth.repository.AuthRepository
 import algo.todo.domain.user.entity.Users
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.response.DomainCode
 import algo.todo.global.security.JwtProvider
 import algo.todo.global.security.ProviderType
 import io.kotest.assertions.throwables.shouldThrow
@@ -27,15 +27,17 @@ class AuthServiceUnitTest : DescribeSpec({
             it("새로운 accessToken, refreshToken 을 반환하고 DB를 업데이트한다") {
                 // given
                 val refreshTokenValue = "validRefreshToken"
-                val user = Users(
-                    email = "test@example.com",
-                    providerType = ProviderType.GOOGLE,
-                    providerId = "providerId"
-                )
-                val savedRefreshToken = RefreshToken(
-                    users = user,
-                    refreshToken = refreshTokenValue
-                )
+                val user =
+                    Users(
+                        email = "test@example.com",
+                        providerType = ProviderType.GOOGLE,
+                        providerId = "providerId",
+                    )
+                val savedRefreshToken =
+                    RefreshToken(
+                        users = user,
+                        refreshToken = refreshTokenValue,
+                    )
 
                 every { authRepository.findByRefreshToken(refreshTokenValue) } returns savedRefreshToken
                 every { jwtProvider.ensureValidToken(refreshTokenValue) } returns Unit
@@ -69,9 +71,10 @@ class AuthServiceUnitTest : DescribeSpec({
                 every { authRepository.findByRefreshToken("nonexistentToken") } returns null
 
                 // when & then
-                val ex = shouldThrow<CustomException> {
-                    authService.reIssueToken(requestDto)
-                }
+                val ex =
+                    shouldThrow<CustomException> {
+                        authService.reIssueToken(requestDto)
+                    }
 
                 ex.errorType shouldBe ErrorType.INVALID_TOKEN
                 ex.domainCode shouldBe DomainCode.COMMON
@@ -82,27 +85,31 @@ class AuthServiceUnitTest : DescribeSpec({
             it("CustomException(INVALID_TOKEN)을 던진다") {
                 // given
                 val invalidTokenValue = "invalidToken"
-                val user = Users(
-                    email = "user@example.com",
-                    providerType = ProviderType.GOOGLE,
-                    providerId = "someProvider"
-                )
-                val refreshTokenEntity = RefreshToken(
-                    users = user,
-                    refreshToken = invalidTokenValue
-                )
+                val user =
+                    Users(
+                        email = "user@example.com",
+                        providerType = ProviderType.GOOGLE,
+                        providerId = "someProvider",
+                    )
+                val refreshTokenEntity =
+                    RefreshToken(
+                        users = user,
+                        refreshToken = invalidTokenValue,
+                    )
 
                 every { authRepository.findByRefreshToken(invalidTokenValue) } returns refreshTokenEntity
                 // ensureValidToken이 예외 발생
-                every { jwtProvider.ensureValidToken(invalidTokenValue) } throws CustomException(
-                    ErrorType.INVALID_TOKEN,
-                    DomainCode.COMMON
-                )
+                every { jwtProvider.ensureValidToken(invalidTokenValue) } throws
+                    CustomException(
+                        ErrorType.INVALID_TOKEN,
+                        DomainCode.COMMON,
+                    )
 
                 // when & then
-                val ex = shouldThrow<CustomException> {
-                    authService.reIssueToken(invalidTokenValue)
-                }
+                val ex =
+                    shouldThrow<CustomException> {
+                        authService.reIssueToken(invalidTokenValue)
+                    }
                 ex.errorType shouldBe ErrorType.INVALID_TOKEN
                 ex.domainCode shouldBe DomainCode.COMMON
             }
@@ -113,15 +120,17 @@ class AuthServiceUnitTest : DescribeSpec({
         context("이미 해당 Users 의 RefreshToken 이 있으면") {
             it("기존 RefreshToken 을 업데이트한다") {
                 // given
-                val user = Users(
-                    email = "existingUser@example.com",
-                    providerType = ProviderType.GOOGLE,
-                    providerId = "someProviderId"
-                )
-                val oldToken = RefreshToken(
-                    users = user,
-                    refreshToken = "oldRefresh"
-                )
+                val user =
+                    Users(
+                        email = "existingUser@example.com",
+                        providerType = ProviderType.GOOGLE,
+                        providerId = "someProviderId",
+                    )
+                val oldToken =
+                    RefreshToken(
+                        users = user,
+                        refreshToken = "oldRefresh",
+                    )
                 val newTokenValue = "newRefresh"
 
                 every { authRepository.findByUsers(user) } returns oldToken
@@ -141,11 +150,12 @@ class AuthServiceUnitTest : DescribeSpec({
         context("해당 Users의 RefreshToken이 없다면") {
             it("새로운 RefreshToken 엔티티를 저장한다") {
                 // given
-                val user = Users(
-                    email = "noRefreshUser@example.com",
-                    providerType = ProviderType.GOOGLE,
-                    providerId = "none"
-                )
+                val user =
+                    Users(
+                        email = "noRefreshUser@example.com",
+                        providerType = ProviderType.GOOGLE,
+                        providerId = "none",
+                    )
                 val newTokenValue = "someRefreshValue"
 
                 every { authRepository.findByUsers(user) } returns null
@@ -157,13 +167,14 @@ class AuthServiceUnitTest : DescribeSpec({
                 // then
                 verify {
                     authRepository.findByUsers(user)
-                    authRepository.save(withArg<RefreshToken> {
-                        it.users shouldBe user
-                        it.refreshToken shouldBe newTokenValue
-                    })
+                    authRepository.save(
+                        withArg<RefreshToken> {
+                            it.users shouldBe user
+                            it.refreshToken shouldBe newTokenValue
+                        },
+                    )
                 }
             }
         }
     }
-
 })

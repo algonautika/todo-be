@@ -2,9 +2,9 @@ package algo.todo.domain.user.service
 
 import algo.todo.domain.user.entity.Users
 import algo.todo.domain.user.repository.UserRepository
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.response.DomainCode
 import algo.todo.global.security.ProviderType
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.user.OAuth2User
@@ -13,9 +13,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
-
     /**
      * 분기 처리
      * 1. 조회된 사용자가 없을 경우
@@ -47,7 +46,7 @@ class UserService(
     private fun processWhenUserIsNull(
         providerType: ProviderType,
         providerId: String,
-        email: String
+        email: String,
     ): Users {
         val user = userRepository.findByEmail(email)
 
@@ -59,15 +58,18 @@ class UserService(
             Users(
                 email = email,
                 providerType = providerType,
-                providerId = providerId
-            )
+                providerId = providerId,
+            ),
         )
     }
 
     /**
      * 사용자 정보가 있을 경우 사용자 정보 업데이트
      */
-    private fun processWhenUserIsNotNull(users: Users, email: String): Users {
+    private fun processWhenUserIsNotNull(
+        users: Users,
+        email: String,
+    ): Users {
         // 접근한 email 과 조회된 email 이 다를 경우
         if (users.email != email) {
             val userByEmail = userRepository.findByEmail(email)
@@ -95,7 +97,7 @@ class UserService(
         return oAuth2User.getAttribute("email") as? String
             ?: throw CustomException(
                 ErrorType.INVALID_OAUTH2_PROVIDER,
-                DomainCode.COMMON
+                DomainCode.COMMON,
             )
     }
 

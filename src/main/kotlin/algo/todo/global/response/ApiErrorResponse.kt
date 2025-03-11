@@ -1,15 +1,15 @@
-package algo.todo.global.dto
+package algo.todo.global.response
 
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
 
 class ApiErrorResponse private constructor(
     val status: String,
-    val message: String
+    val message: String,
 ) {
     constructor(
         errorType: ErrorType,
-        domainCode: DomainCode
+        domainCode: DomainCode,
     ) : this(
         "${errorType.status.value()}-${domainCode.code}",
         errorType.message,
@@ -17,6 +17,6 @@ class ApiErrorResponse private constructor(
 
     constructor(exception: CustomException) : this(
         "${exception.errorType.status.value()}-${exception.domainCode.code}",
-        exception.errorType.message
+        exception.errorType.message,
     )
 }

@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface AuthRepository : JpaRepository<RefreshToken, Long> {
     fun findByRefreshToken(refreshToken: String): RefreshToken?
+
     fun findByUsers(users: Users): RefreshToken?
 }

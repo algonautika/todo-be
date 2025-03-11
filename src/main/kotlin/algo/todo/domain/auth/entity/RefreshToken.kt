@@ -8,25 +8,22 @@ import org.hibernate.envers.Audited
 @Entity
 @Table(name = "refresh_token")
 class RefreshToken private constructor(
-
     @field:Id
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
-
     @field:OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    @field:JoinColumn(name = "user_id")
+    @field:JoinColumn(name = "user_id", nullable = false)
     var users: Users,
-
-    @field:Column(name = "refresh_token")
-    var refreshToken: String? = null
+    @field:Column(name = "refresh_token", columnDefinition = "varchar(255) NOT NULL", nullable = false)
+    var refreshToken: String? = null,
 ) {
     constructor(
         users: Users,
-        refreshToken: String
+        refreshToken: String,
     ) : this(
         id = 0,
         users = users,
-        refreshToken = refreshToken
+        refreshToken = refreshToken,
     )
 
     fun updateRefreshToken(refreshToken: String) {

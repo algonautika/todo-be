@@ -2,10 +2,10 @@ package algo.todo.global.security
 
 import algo.todo.domain.auth.service.AuthService
 import algo.todo.domain.user.service.UserService
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
 import algo.todo.global.exception.FailureHandler
+import algo.todo.global.response.DomainCode
 import algo.todo.global.util.CookieUtil
 import jakarta.persistence.EntityManager
 import jakarta.servlet.http.HttpServletRequest
@@ -21,9 +21,8 @@ class OAuth2LoginSuccessHandler(
     private val entityManager: EntityManager,
     private val userService: UserService,
     private val jwtProvider: JwtProvider,
-    private val authService: AuthService
+    private val authService: AuthService,
 ) : AuthenticationSuccessHandler {
-
     /**
      * OAuth2 로그인 성공 시 호출되는 메서드
      * 따라서 security 내부적으로 인증을 보장하기 때문에 Authentication 데이터를 신뢰할 수 있음
@@ -32,7 +31,7 @@ class OAuth2LoginSuccessHandler(
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        authentication: Authentication
+        authentication: Authentication,
     ) {
         runCatching {
             val oAuth2User = getOauth2AuthenticationTokenFromAuthentication(authentication)
@@ -45,7 +44,7 @@ class OAuth2LoginSuccessHandler(
             CookieUtil.setAccessTokenAndRefreshTokenCookie(
                 response = response,
                 accessToken = accessToken,
-                refreshToken = refreshToken
+                refreshToken = refreshToken,
             )
 
             authService.upsertRefreshToken(user, refreshToken)
@@ -56,11 +55,9 @@ class OAuth2LoginSuccessHandler(
         }
     }
 
-    private fun getOauth2AuthenticationTokenFromAuthentication(authentication: Authentication)
-            : OAuth2AuthenticationToken =
+    private fun getOauth2AuthenticationTokenFromAuthentication(authentication: Authentication): OAuth2AuthenticationToken =
         authentication as? OAuth2AuthenticationToken ?: throw CustomException(
             ErrorType.INVALID_OAUTH2_PROVIDER,
-            DomainCode.COMMON
+            DomainCode.COMMON,
         )
-
 }

@@ -12,9 +12,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableWebSecurity
 class SecurityConfig(
     private val oAuth2LoginSuccessHandler: OAuth2LoginSuccessHandler,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
 ) {
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -45,7 +44,7 @@ class SecurityConfig(
             }
             .addFilterBefore(
                 AuthenticationFilter(jwtProvider),
-                BasicAuthenticationFilter::class.java
+                BasicAuthenticationFilter::class.java,
             )
 
         return http.build()

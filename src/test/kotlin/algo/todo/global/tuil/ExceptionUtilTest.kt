@@ -1,8 +1,8 @@
 package algo.todo.global.tuil
 
-import algo.todo.global.dto.ApiErrorResponse
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.response.ApiErrorResponse
+import algo.todo.global.response.DomainCode
 import algo.todo.global.util.ExceptionUtil
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.core.spec.style.DescribeSpec
@@ -49,10 +49,11 @@ class ExceptionUtilTest : DescribeSpec({
                 val writtenJson = slotString.captured
                 val mapper = ObjectMapper()
 
-                val dto = ApiErrorResponse(
-                    errorType = errorType,
-                    domainCode = domainCode
-                )
+                val dto =
+                    ApiErrorResponse(
+                        errorType = errorType,
+                        domainCode = domainCode,
+                    )
 
                 val parsed = mapper.readValue(writtenJson, Map::class.java)
                 parsed["status"] shouldBe dto.status

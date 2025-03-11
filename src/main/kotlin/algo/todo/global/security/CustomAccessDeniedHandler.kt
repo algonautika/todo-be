@@ -1,7 +1,7 @@
 package algo.todo.global.security
 
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.response.DomainCode
 import algo.todo.global.util.ExceptionUtil
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class CustomAccessDeniedHandler : AccessDeniedHandler {
-
     companion object {
         private val log = LogManager.getLogger(CustomAccessDeniedHandler::class.java)
     }
@@ -20,14 +19,14 @@ class CustomAccessDeniedHandler : AccessDeniedHandler {
     override fun handle(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        accessDeniedException: AccessDeniedException
+        accessDeniedException: AccessDeniedException,
     ) {
         log.warn("Forbidden 403 error: {}", accessDeniedException.message)
 
         ExceptionUtil.writeErrorJson(
             response,
             ErrorType.FORBIDDEN,
-            DomainCode.COMMON
+            DomainCode.COMMON,
         )
     }
 }

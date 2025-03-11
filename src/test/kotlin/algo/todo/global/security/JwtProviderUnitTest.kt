@@ -2,9 +2,9 @@ package algo.todo.global.security
 
 import algo.todo.domain.user.entity.Users
 import algo.todo.domain.user.repository.UserRepository
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.CustomException
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.response.DomainCode
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import io.kotest.assertions.throwables.shouldThrow
@@ -22,22 +22,24 @@ class JwtProviderUnitTest : DescribeSpec({
 
     // 테스트용 secret / 만료시간
     val secretKey = "testSecretKeytestSecretKeytestSecretKeytestSecretKeytestSecretKey"
-    val accessExpMillis = 60_000L   // 1분
+    val accessExpMillis = 60_000L // 1분
     val refreshExpMillis = 120_000L // 2분
 
-    val jwtProvider = JwtProvider(
-        secret = secretKey,
-        accessTokenExpirationInMillis = accessExpMillis,
-        refreshTokenExpirationInMillis = refreshExpMillis,
-        userRepository = userRepository
-    )
+    val jwtProvider =
+        JwtProvider(
+            secret = secretKey,
+            accessTokenExpirationInMillis = accessExpMillis,
+            refreshTokenExpirationInMillis = refreshExpMillis,
+            userRepository = userRepository,
+        )
 
     fun createTestUser(): Users {
-        val user = Users(
-            email = "test@example.com",
-            providerType = ProviderType.GOOGLE,
-            providerId = "testProviderId"
-        )
+        val user =
+            Users(
+                email = "test@example.com",
+                providerType = ProviderType.GOOGLE,
+                providerId = "testProviderId",
+            )
 
         ReflectionTestUtils.setField(user, "id", 1L)
 
@@ -94,9 +96,10 @@ class JwtProviderUnitTest : DescribeSpec({
                 val invalidToken = "xx.yy.zz"
 
                 // when & then
-                val ex = shouldThrow<CustomException> {
-                    jwtProvider.ensureValidToken(invalidToken)
-                }
+                val ex =
+                    shouldThrow<CustomException> {
+                        jwtProvider.ensureValidToken(invalidToken)
+                    }
 
                 ex.errorType shouldBe ErrorType.INVALID_TOKEN
                 ex.domainCode shouldBe DomainCode.COMMON
@@ -130,9 +133,10 @@ class JwtProviderUnitTest : DescribeSpec({
                     val invalidToken = "xx.yy.zz"
 
                     // when
-                    val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(invalidToken, response)
-                    }
+                    val ex =
+                        shouldThrow<CustomException> {
+                            jwtProvider.getAuthentication(invalidToken, response)
+                        }
 
                     // then
                     ex.errorType shouldBe ErrorType.INVALID_TOKEN
@@ -149,9 +153,10 @@ class JwtProviderUnitTest : DescribeSpec({
                     every { userRepository.findByIdAndEmail(any(), any()) } returns null
 
                     // when
-                    val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(token, response)
-                    }
+                    val ex =
+                        shouldThrow<CustomException> {
+                            jwtProvider.getAuthentication(token, response)
+                        }
 
                     // then
                     ex.errorType shouldBe ErrorType.INVALID_TOKEN
@@ -166,9 +171,10 @@ class JwtProviderUnitTest : DescribeSpec({
                     val refreshToken = jwtProvider.generateRefreshToken(user)
 
                     // when
-                    val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(refreshToken, response)
-                    }
+                    val ex =
+                        shouldThrow<CustomException> {
+                            jwtProvider.getAuthentication(refreshToken, response)
+                        }
 
                     // then
                     ex.errorType shouldBe ErrorType.INVALID_TOKEN
@@ -181,17 +187,19 @@ class JwtProviderUnitTest : DescribeSpec({
                     // given
                     val key = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
-                    val invalidToken = Jwts.builder()
+                    val invalidToken =
+                        Jwts.builder()
 //                        .claim("id", 1L) // id 는 필수 claim
-                        .claim("token_type", TokenType.ACCESS)
-                        .subject("testUser@gmail.com")
-                        .signWith(key)
-                        .compact()
+                            .claim("token_type", TokenType.ACCESS)
+                            .subject("testUser@gmail.com")
+                            .signWith(key)
+                            .compact()
 
                     // when & then
-                    val ex = shouldThrow<CustomException> {
-                        jwtProvider.getAuthentication(invalidToken, response)
-                    }
+                    val ex =
+                        shouldThrow<CustomException> {
+                            jwtProvider.getAuthentication(invalidToken, response)
+                        }
 
                     ex.errorType shouldBe ErrorType.INVALID_TOKEN
                     ex.domainCode shouldBe DomainCode.COMMON
@@ -200,4 +208,3 @@ class JwtProviderUnitTest : DescribeSpec({
         }
     }
 })
-

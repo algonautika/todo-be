@@ -1,7 +1,6 @@
 package algo.todo.domain.auth.controller.dto.response
 
-data class ReIssueTokenResponseDto(
+data class ReIssueTokenResponse(
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
 )
-

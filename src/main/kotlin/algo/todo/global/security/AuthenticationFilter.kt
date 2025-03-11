@@ -7,15 +7,13 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter
 
-
 class AuthenticationFilter(
-    private val tokenProvider: JwtProvider
+    private val tokenProvider: JwtProvider,
 ) : OncePerRequestFilter() {
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         CookieUtil.getAccessTokenFromCookie(request).onSuccess { token ->
             tokenProvider.getAuthentication(token, response).onSuccess { auth ->
@@ -25,5 +23,4 @@ class AuthenticationFilter(
 
         filterChain.doFilter(request, response)
     }
-
 }

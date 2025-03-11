@@ -4,10 +4,10 @@ import algo.todo.domain.user.entity.Users
 
 data class UserProfileResponse(
     val id: Long,
-    val email: String
+    val email: String,
 ) {
     constructor(user: Users) : this(
         id = user.id,
-        email = user.email
+        email = user.email,
     )
 }

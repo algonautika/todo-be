@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus
 
 enum class ErrorType(
     val status: HttpStatus,
-    val message: String
+    val message: String,
 ) {
     UNCAUGHT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "Uncaught exception"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized"),

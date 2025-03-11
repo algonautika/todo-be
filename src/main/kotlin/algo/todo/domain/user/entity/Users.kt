@@ -11,39 +11,31 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "users")
 class Users private constructor(
-
     @field:Id
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
-
-    @field:Column(name = "email")
+    @field:Column(name = "email", columnDefinition = "varchar(100) NOT NULL", nullable = false)
     var email: String,
-
-
     @field:Enumerated(EnumType.STRING)
-    @field:Column(name = "provider")
+    @field:Column(name = "provider", columnDefinition = "varchar(20) NOT NULL", nullable = false)
     val providerType: ProviderType,
-
-    @field:Column(name = "provider_id")
+    @field:Column(name = "provider_id", columnDefinition = "varchar(50) NOT NULL", nullable = false)
     val providerId: String,
-
     @field:CreationTimestamp
-    @field:Column(name = "created_at")
+    @field:Column(name = "created_at", columnDefinition = "TIMESTAMP NOT NULL", nullable = false)
     val createdAt: LocalDateTime,
-
     @field:OneToOne(mappedBy = "users", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    var refreshToken: RefreshToken? = null
+    var refreshToken: RefreshToken? = null,
 ) {
     constructor(
         email: String,
         providerType: ProviderType,
-        providerId: String
+        providerId: String,
     ) : this(
         id = 0,
         email = email,
         providerType = providerType,
         providerId = providerId,
-        createdAt = LocalDateTime.now()
+        createdAt = LocalDateTime.now(),
     )
 }
-

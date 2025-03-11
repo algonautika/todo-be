@@ -1,7 +1,7 @@
 package algo.todo.global.security
 
-import algo.todo.global.dto.DomainCode
 import algo.todo.global.exception.ErrorType
+import algo.todo.global.response.DomainCode
 import algo.todo.global.util.ExceptionUtil
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component
  */
 @Component
 class CustomAuthenticationEntryPoint : AuthenticationEntryPoint {
-
     companion object {
         private val log = LogManager.getLogger(CustomAuthenticationEntryPoint::class.java)
     }
@@ -23,14 +22,14 @@ class CustomAuthenticationEntryPoint : AuthenticationEntryPoint {
     override fun commence(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        authException: AuthenticationException
+        authException: AuthenticationException,
     ) {
         log.warn("Unauthorized 401 error: {}", authException.message)
 
         ExceptionUtil.writeErrorJson(
             response,
             ErrorType.UNAUTHORIZED,
-            DomainCode.COMMON
+            DomainCode.COMMON,
         )
     }
 }

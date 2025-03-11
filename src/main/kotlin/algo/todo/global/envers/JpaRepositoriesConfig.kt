@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @Configuration
 @EnableJpaRepositories(
     basePackages = ["algo.todo"],
-    repositoryFactoryBeanClass = EnversRevisionRepositoryFactoryBean::class
+    repositoryFactoryBeanClass = EnversRevisionRepositoryFactoryBean::class,
 )
 class JpaRepositoriesConfig
-

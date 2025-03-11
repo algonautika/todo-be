@@ -9,7 +9,6 @@ import org.hibernate.envers.RevisionTimestamp
 @RevisionEntity(CustomRevisionEntityListener::class)
 @Table(name = "revision_history")
 class CustomRevisionEntity {
-
     @Id
     @Column
     @RevisionNumber
