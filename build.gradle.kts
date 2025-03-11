@@ -5,6 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "1.9.25"
     id("jacoco")
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
 }
 
 group = "algo"
@@ -39,12 +40,15 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt:0.12.6")
 
     // test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+        exclude(module = "org.mockito")
+    }
+
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.1")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1")
     testImplementation("io.mockk:mockk:1.13.17")
-
 }
 
 kotlin {
@@ -77,7 +81,7 @@ tasks.jacocoTestCoverageVerification {
     val domains = mutableListOf<String>()
 
     for (qPattern in 'A'..'Z') {
-        domains.add("*.Q${qPattern}*")
+        domains.add("*.Q$qPattern*")
     }
 
     violationRules {
@@ -106,7 +110,7 @@ tasks.jacocoTestCoverageVerification {
         classDirectories.setFrom(
             sourceSets.main.get().output.asFileTree.matching {
                 exclude(excludes)
-            }
+            },
         )
     }
 }
