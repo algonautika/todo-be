@@ -4,5 +4,6 @@ enum class DomainCode(
     val code: String,
 ) {
     COMMON("000"),
-    USER("001"),
+    UTIL("001"),
+    USER("100"),
 }

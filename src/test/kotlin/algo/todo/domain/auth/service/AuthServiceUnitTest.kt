@@ -71,10 +71,9 @@ class AuthServiceUnitTest : DescribeSpec({
                 every { authRepository.findByRefreshToken("nonexistentToken") } returns null
 
                 // when & then
-                val ex =
-                    shouldThrow<CustomException> {
-                        authService.reIssueToken(requestDto)
-                    }
+                val ex = shouldThrow<CustomException> {
+                    authService.reIssueToken(requestDto)
+                }
 
                 ex.errorType shouldBe ErrorType.INVALID_TOKEN
                 ex.domainCode shouldBe DomainCode.COMMON
@@ -100,10 +99,10 @@ class AuthServiceUnitTest : DescribeSpec({
                 every { authRepository.findByRefreshToken(invalidTokenValue) } returns refreshTokenEntity
                 // ensureValidToken이 예외 발생
                 every { jwtProvider.ensureValidToken(invalidTokenValue) } throws
-                    CustomException(
-                        ErrorType.INVALID_TOKEN,
-                        DomainCode.COMMON,
-                    )
+                        CustomException(
+                            ErrorType.INVALID_TOKEN,
+                            DomainCode.COMMON,
+                        )
 
                 // when & then
                 val ex =

@@ -95,10 +95,7 @@ class JwtProvider(
         val email = claims["sub"]
 
         if (idLong !is Int || email !is String) {
-            throw CustomException(
-                ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON,
-            )
+            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
         }
 
         val id = idLong.toLong()
@@ -114,10 +111,7 @@ class JwtProvider(
         val tokenType = TokenType.valueOf(tokenTypeString)
 
         if (tokenType != TokenType.ACCESS) {
-            throw CustomException(
-                ErrorType.INVALID_TOKEN,
-                DomainCode.COMMON,
-            )
+            throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
         }
     }
 
