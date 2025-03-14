@@ -27,7 +27,7 @@ class CookieUtil {
                 request.cookies
                     ?.find { it.name == ACCESS_TOKEN }
                     ?.value
-                    ?: throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
+                    ?: throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.UTIL)
             }
 
         fun getRefreshTokenFromCookie(request: HttpServletRequest): Result<String> =
@@ -35,7 +35,7 @@ class CookieUtil {
                 request.cookies
                     ?.find { it.name == REFRESH_TOKEN }
                     ?.value
-                    ?: throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.COMMON)
+                    ?: throw CustomException(ErrorType.INVALID_TOKEN, DomainCode.UTIL)
             }
 
         /**

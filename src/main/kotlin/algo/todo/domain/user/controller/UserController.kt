@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 class UserController {
     @GetMapping(ApiEndpointV1.USER + "/me")
     fun getUser(
-        @AuthenticationPrincipal userDetails: CustomUserDetails,
+        @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ResponseEntity<ApiResponse> {
         val userProfile = UserProfileResponse(userDetails.users)
         return ResponseEntity.ok(ApiResponse.success(userProfile))

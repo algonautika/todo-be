@@ -12,7 +12,7 @@ class SecurityUtil {
             runCatching {
                 SecurityContextHolder.getContext().authentication
                     ?.principal as? CustomUserDetails
-                    ?: throw CustomException(ErrorType.UNAUTHORIZED, DomainCode.USER)
+                    ?: throw CustomException(ErrorType.UNAUTHORIZED, DomainCode.UTIL)
             }
     }
 }
