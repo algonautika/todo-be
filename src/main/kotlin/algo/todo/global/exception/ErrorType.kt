@@ -14,6 +14,7 @@ enum class ErrorType(
     CANNOT_CHANGE_EMAIL(HttpStatus.BAD_REQUEST, "Cannot change to an email that is already in use"),
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "Invalid token"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not found"),
+    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "Not found user"),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad request"),
     INVALID_TIME_ZONE(HttpStatus.BAD_REQUEST, "Invalid time zone"),
 }

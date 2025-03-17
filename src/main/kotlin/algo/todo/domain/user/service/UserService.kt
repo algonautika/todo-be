@@ -40,6 +40,14 @@ class UserService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getUserByUserId(userId: Long): Users {
+        return userRepository.findById(userId)
+            .orElseThrow {
+                throw CustomException(ErrorType.NOT_FOUND_USER, DomainCode.COMMON)
+            }
+    }
+
     /**
      * 사용자 정보가 없을 경우 사용자 정보 생성
      */

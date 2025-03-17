@@ -14,7 +14,7 @@ class UserController {
     @GetMapping(ApiEndpointV1.USER + "/me")
     fun getUser(
         @AuthenticationPrincipal userDetails: CustomUserDetails,
-    ): ResponseEntity<ApiResponse> {
+    ): ResponseEntity<ApiResponse<UserProfileResponse>> {
         val userProfile = UserProfileResponse(userDetails.users)
         return ResponseEntity.ok(ApiResponse.success(userProfile))
     }

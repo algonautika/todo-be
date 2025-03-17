@@ -15,7 +15,7 @@ class ExceptionUtil {
             errorType: ErrorType,
             domainCode: DomainCode,
         ) {
-            val errorResponse = ApiResponse.error(
+            val errorResponse = ApiResponse.error<Nothing>(
                 errorType = errorType,
                 domainCode = domainCode,
             )

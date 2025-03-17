@@ -6,6 +6,7 @@ import algo.todo.global.util.CookieUtil
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -17,8 +18,8 @@ class AuthController(
     fun refreshToken(
         request: HttpServletRequest,
         response: HttpServletResponse,
+        @CookieValue(name = "refresh_token") refreshToken: String
     ): ResponseEntity<Void> {
-        val refreshToken = CookieUtil.getRefreshTokenFromCookie(request).getOrThrow()
         val reIssueTokens = authService.reIssueToken(refreshToken)
 
         CookieUtil.setAccessTokenAndRefreshTokenCookie(

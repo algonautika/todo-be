@@ -27,10 +27,10 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<ApiResponse> {
+    fun handleException(e: Exception): ResponseEntity<ApiResponse<Nothing>> {
         printErrorMessage(e)
 
-        val response = ApiResponse.error(
+        val response = ApiResponse.error<Nothing>(
             errorType = ErrorType.UNCAUGHT_EXCEPTION,
             domainCode = DomainCode.COMMON,
         )
@@ -40,9 +40,9 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(CustomException::class)
-    fun handleCustomException(e: CustomException): ResponseEntity<ApiResponse> {
+    fun handleCustomException(e: CustomException): ResponseEntity<ApiResponse<Nothing>> {
         printErrorMessage(e)
-        val response = ApiResponse.error(
+        val response = ApiResponse.error<Nothing>(
             exception = e,
         )
         return ResponseEntity
@@ -58,7 +58,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest,
     ): ResponseEntity<Any> {
         printErrorMessage(e)
-        val response = ApiResponse.error(
+        val response = ApiResponse.error<Nothing>(
             errorType = ErrorType.BAD_REQUEST,
             domainCode = DomainCode.COMMON,
         )
@@ -74,7 +74,7 @@ class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
         request: WebRequest,
     ): ResponseEntity<Any>? {
         val response =
-            ApiResponse.error(
+            ApiResponse.error<Nothing>(
                 ErrorType.NOT_FOUND,
                 DomainCode.COMMON,
             )

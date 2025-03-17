@@ -1,6 +1,7 @@
 package algo.todo.domain.todo.controller.dto.request
 
 import algo.todo.domain.todo.entity.Todo
+import algo.todo.domain.user.entity.Users
 import algo.todo.global.util.TimeUtil
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
@@ -19,10 +20,11 @@ data class CreateTodoRequest(
     @field:NotBlank(message = "content is required")
     val timeZone: String,
 ) {
-    fun toEntity(): Todo {
+    fun toEntity(users: Users): Todo {
         val convertedTimeZone = TimeUtil.convertToTimeZone(timeZone).getOrThrow()
 
         return Todo(
+            user = users,
             title = title,
             description = description,
             startDate = startDate,
