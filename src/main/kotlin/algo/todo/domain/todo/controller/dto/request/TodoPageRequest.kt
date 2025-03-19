@@ -10,7 +10,7 @@ data class TodoPageRequest(
     val preview: String = "description:500",
 ) {
 
-    private val VALID_SORT_FIELDS = setOf(
+    private val validSortField = setOf(
         "createdAt", "startDate", "endDate", "deadline"
     )
 
@@ -54,7 +54,7 @@ data class TodoPageRequest(
                 val direction = parts[1]
 
                 // 정렬 필드가 유효한지 확인
-                if (field in VALID_SORT_FIELDS) {
+                if (field in validSortField) {
                     return field to direction
                 }
 

@@ -7,7 +7,6 @@ import algo.todo.global.exception.ErrorType
 import algo.todo.global.exception.FailureHandler
 import algo.todo.global.response.DomainCode
 import algo.todo.global.util.CookieUtil
-import jakarta.persistence.EntityManager
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Component
 class OAuth2LoginSuccessHandler(
-    private val entityManager: EntityManager,
     private val userService: UserService,
     private val jwtProvider: JwtProvider,
     private val authService: AuthService,
