@@ -7,5 +7,6 @@ object SecurityConstants {
             "/login",
             "/error",
             "/v1/auth/refresh",
+            "/v1/todos",
         )
 }

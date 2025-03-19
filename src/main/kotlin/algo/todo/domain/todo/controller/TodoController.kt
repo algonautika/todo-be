@@ -2,7 +2,8 @@ package algo.todo.domain.todo.controller
 
 import ApiResponse
 import algo.todo.domain.todo.controller.dto.request.CreateTodoRequest
-import algo.todo.domain.todo.entity.Todo
+import algo.todo.domain.todo.controller.dto.request.TodoPageRequest
+import algo.todo.domain.todo.controller.dto.response.TodoListResponse
 import algo.todo.domain.todo.service.TodoService
 import algo.todo.global.constant.ApiEndpointV1
 import algo.todo.global.security.CustomUserDetails
@@ -17,15 +18,17 @@ class TodoController(
     @GetMapping(ApiEndpointV1.TODO)
     fun getTodos(
         @AuthenticationPrincipal userDetails: CustomUserDetails,
-        @RequestParam(name = "page", defaultValue = "0") page: Int,
-        @RequestParam(name = "pageSize", defaultValue = "10") pageSize: Long,
-        @RequestParam(name = "sort", defaultValue = "createAt:desc") sort: String,
-        @RequestParam(name = "preview", defaultValue = "description:500") preview: String,
-    ): ResponseEntity<ApiResponse<Todo>> {
+        @ModelAttribute pageRequest: TodoPageRequest
+    ): ResponseEntity<ApiResponse<TodoListResponse>> {
         val todos = todoService.getTodosWithPagination(
-            userDetails.users.id
+            userDetails.users.id,
+            pageRequest
         )
-        return ResponseEntity.ok().body(ApiResponse.successList(0, 0, todos))
+
+        val todoListResponse = todos.get().map { TodoListResponse(it, pageRequest.previewSize) }.toList()
+        return ResponseEntity.ok().body(
+            ApiResponse.successList(todos.totalPages, pageRequest.base.page, todoListResponse)
+        )
     }
 
     @PostMapping(ApiEndpointV1.TODO)
