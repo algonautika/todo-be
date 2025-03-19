@@ -6,24 +6,35 @@ import java.util.*
 
 data class TodoListResponse(
     val id: Long,
-    val title: String,
+    var title: String,
     val userId: Long,
-    val description: String,
+    var description: String,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
     val deadline: LocalDateTime,
     val createdAt: LocalDateTime,
     val timeZone: TimeZone,
 ) {
-    constructor(todo: Todo, previewSize: Int) : this(
+    constructor(todo: Todo) : this(
         id = todo.id,
         title = todo.title,
         userId = todo.user.id,
-        description = todo.description.take(previewSize),
+        description = todo.description,
         startDate = todo.startDate,
         endDate = todo.endDate,
         deadline = todo.deadline,
         createdAt = todo.createdAt,
         timeZone = todo.timeZone,
     )
+
+    fun applyPreview(preview: Pair<String, Int>): TodoListResponse {
+        val defaultTakeLength = 500
+        val takeLength = preview.second + 1
+
+        return when (preview.first) {
+            "title" -> this.copy(title = this.title.take(takeLength))
+            "description" -> this.copy(description = this.description.take(takeLength))
+            else -> this.copy(description = this.description.take(defaultTakeLength))
+        }
+    }
 }

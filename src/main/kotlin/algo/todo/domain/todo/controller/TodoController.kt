@@ -25,7 +25,10 @@ class TodoController(
             pageRequest
         )
 
-        val todoListResponse = todos.get().map { TodoListResponse(it, pageRequest.previewSize) }.toList()
+        val todoListResponse = todos.get().map {
+            TodoListResponse(it).applyPreview(pageRequest.parsePreview())
+        }.toList()
+
         return ResponseEntity.ok().body(
             ApiResponse.successList(todos.totalPages, pageRequest.base.page, todoListResponse)
         )
