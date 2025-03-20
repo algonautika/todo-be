@@ -6,4 +6,5 @@ enum class DomainCode(
     COMMON("000"),
     UTIL("001"),
     USER("100"),
+    TODO("200"),
 }

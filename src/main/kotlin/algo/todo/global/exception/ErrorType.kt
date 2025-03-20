@@ -15,6 +15,7 @@ enum class ErrorType(
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "Invalid token"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not found"),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "Not found user"),
+    NOT_FOUND_TODO(HttpStatus.NOT_FOUND, "Not found todo"),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad request"),
     INVALID_TIME_ZONE(HttpStatus.BAD_REQUEST, "Invalid time zone"),
 }

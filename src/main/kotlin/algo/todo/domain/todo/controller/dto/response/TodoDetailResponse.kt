@@ -4,11 +4,11 @@ import algo.todo.domain.todo.entity.Todo
 import java.time.LocalDateTime
 import java.util.*
 
-data class TodoListResponse(
+data class TodoDetailResponse(
     val id: Long,
-    var title: String,
+    val title: String,
     val userId: Long,
-    var description: String,
+    val description: String,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
     val deadline: LocalDateTime,
@@ -16,8 +16,8 @@ data class TodoListResponse(
     val timeZone: TimeZone,
 ) {
     companion object {
-        fun from(todo: Todo): TodoListResponse {
-            return TodoListResponse(
+        fun from(todo: Todo): TodoDetailResponse {
+            return TodoDetailResponse(
                 id = todo.id,
                 title = todo.title,
                 userId = todo.user.id,
@@ -28,17 +28,6 @@ data class TodoListResponse(
                 createdAt = todo.createdAt,
                 timeZone = todo.timeZone,
             )
-        }
-    }
-
-    fun applyPreview(preview: Pair<String, Int>): TodoListResponse {
-        val defaultTakeLength = 500
-        val takeLength = preview.second + 1
-
-        return when (preview.first) {
-            "title" -> this.copy(title = this.title.take(takeLength))
-            "description" -> this.copy(description = this.description.take(takeLength))
-            else -> this.copy(description = this.description.take(defaultTakeLength))
         }
     }
 }
