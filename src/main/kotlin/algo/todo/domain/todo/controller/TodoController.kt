@@ -3,11 +3,13 @@ package algo.todo.domain.todo.controller
 import ApiResponse
 import algo.todo.domain.todo.controller.dto.request.CreateTodoRequest
 import algo.todo.domain.todo.controller.dto.request.TodoPageRequest
+import algo.todo.domain.todo.controller.dto.request.UpdateTodoRequest
 import algo.todo.domain.todo.controller.dto.response.TodoDetailResponse
 import algo.todo.domain.todo.controller.dto.response.TodoListResponse
 import algo.todo.domain.todo.service.TodoService
 import algo.todo.global.constant.ApiEndpointV1
 import algo.todo.global.security.CustomUserDetails
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -21,7 +23,10 @@ class TodoController(
         @AuthenticationPrincipal userDetails: CustomUserDetails,
         @ModelAttribute pageRequest: TodoPageRequest
     ): ResponseEntity<ApiResponse<TodoListResponse>> {
-        val todos = todoService.getTodosWithPagination(userDetails.users.id, pageRequest)
+        val todos = todoService.getTodosWithPagination(
+            userId = userDetails.users.id,
+            todoPageRequest = pageRequest
+        )
 
         val todoListResponse = todos.get().map {
             TodoListResponse.from(it).applyPreview(pageRequest.parsePreview())
@@ -37,17 +42,40 @@ class TodoController(
         @AuthenticationPrincipal userDetails: CustomUserDetails,
         @PathVariable id: Long
     ): ResponseEntity<ApiResponse<TodoDetailResponse>> {
-        val todo = todoService.getTodoDetail(userDetails.users.id, id)
+        val todo = todoService.getTodoDetail(
+            userId = userDetails.users.id,
+            todoId = id
+        )
+
         return ResponseEntity.ok().body(ApiResponse.success(TodoDetailResponse.from(todo)))
     }
 
     @PostMapping(ApiEndpointV1.TODO)
     fun createTodos(
         @AuthenticationPrincipal userDetails: CustomUserDetails,
-        @RequestBody requestDto: CreateTodoRequest
+        @Valid @RequestBody requestDto: CreateTodoRequest
     ): ResponseEntity<ApiResponse<Long>> {
-        val savedTodo = todoService.createTodo(userDetails.users.id, requestDto)
+        val savedTodo = todoService.createTodo(
+            userId = userDetails.users.id,
+            requestDto = requestDto
+        )
+
         return ResponseEntity.ok().body(ApiResponse.success(savedTodo.id))
+    }
+
+    @PatchMapping(ApiEndpointV1.TODO + "/{id}")
+    fun updateTodo(
+        @AuthenticationPrincipal userDetails: CustomUserDetails,
+        @PathVariable id: Long,
+        @Valid @RequestBody requestDto: UpdateTodoRequest
+    ): ResponseEntity<ApiResponse<Long>> {
+        todoService.updateTodo(
+            userId = userDetails.users.id,
+            todoId = id,
+            requestDto = requestDto
+        )
+
+        return ResponseEntity.ok().body(ApiResponse.success(null))
     }
 
 }

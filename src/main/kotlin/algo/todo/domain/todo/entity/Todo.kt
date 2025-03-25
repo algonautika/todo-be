@@ -1,6 +1,7 @@
 package algo.todo.domain.todo.entity
 
 import algo.todo.domain.user.entity.Users
+import algo.todo.global.util.TimeUtil
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.envers.Audited
@@ -37,7 +38,7 @@ class Todo private constructor(
     @field:CreationTimestamp
     @field:Column(name = "created_at", columnDefinition = "TIMESTAMP NOT NULL", nullable = false)
     val createdAt: LocalDateTime,
-    
+
     @field:Column(name = "time_zone", columnDefinition = "varchar(50) NOT NULL", nullable = false)
     var timeZone: TimeZone,
 ) {
@@ -48,7 +49,7 @@ class Todo private constructor(
         startDate: LocalDateTime,
         endDate: LocalDateTime,
         deadline: LocalDateTime,
-        timeZone: TimeZone
+        timeZone: String
     ) : this(
         id = 0,
         user = user,
@@ -58,6 +59,22 @@ class Todo private constructor(
         endDate = endDate,
         deadline = deadline,
         createdAt = LocalDateTime.now(),
-        timeZone = timeZone,
+        timeZone = TimeUtil.convertToTimeZone(timeZone).getOrThrow()
     )
+
+    fun update(
+        title: String,
+        description: String,
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+        deadline: LocalDateTime,
+        timeZone: String
+    ) {
+        this.title = title
+        this.description = description
+        this.startDate = startDate
+        this.endDate = endDate
+        this.deadline = deadline
+        this.timeZone = TimeUtil.convertToTimeZone(timeZone).getOrThrow()
+    }
 }
