@@ -68,11 +68,24 @@ class TodoController(
         @AuthenticationPrincipal userDetails: CustomUserDetails,
         @PathVariable id: Long,
         @Valid @RequestBody requestDto: UpdateTodoRequest
-    ): ResponseEntity<ApiResponse<Long>> {
+    ): ResponseEntity<ApiResponse<Void>> {
         todoService.updateTodo(
             userId = userDetails.users.id,
             todoId = id,
             requestDto = requestDto
+        )
+
+        return ResponseEntity.ok().body(ApiResponse.success(null))
+    }
+
+    @DeleteMapping(ApiEndpointV1.TODO + "/{id}")
+    fun deleteTodo(
+        @AuthenticationPrincipal userDetails: CustomUserDetails,
+        @PathVariable id: Long
+    ): ResponseEntity<ApiResponse<Void>> {
+        todoService.deleteTodo(
+            userId = userDetails.users.id,
+            todoId = id
         )
 
         return ResponseEntity.ok().body(ApiResponse.success(null))

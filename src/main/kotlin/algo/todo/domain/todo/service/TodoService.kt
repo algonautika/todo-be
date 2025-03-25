@@ -53,4 +53,10 @@ class TodoService(
             timeZone = requestDto.timeZone
         )
     }
+
+    @Transactional
+    fun deleteTodo(userId: Long, todoId: Long) {
+        val todo = getTodoDetail(userId, todoId)
+        todoRepository.delete(todo)
+    }
 }
