@@ -12,7 +12,7 @@ import algo.todo.global.response.DomainCode
 import algo.todo.global.security.ProviderType
 import algo.todo.global.util.TimeUtil
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -21,65 +21,66 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.time.LocalDateTime
 import java.util.*
 
-class TodoUnitService : DescribeSpec({
+class TodoUnitService : BehaviorSpec({
 
     val todoRepository = mockk<TodoRepository>()
     val userService = mockk<UserService>()
     val todoService = TodoService(userService, todoRepository)
 
-    describe("TodoService.getTodoDetail()") {
-        context("특정 userId와 todoId가 주어졌을 때") {
-            it("존재하지 않는 경우 예외(CustomException)를 발생시킨다") {
-                // given
-                val userId = 3L
-                val todoId = 999L
+    Given("findByUserIdAndId 조회 시 해당 Todo가 존재하지 않는 상황에서") {
+        // "전제 상태"를 설정
+        every { todoRepository.findByUserIdAndId(3L, 999L) } returns Optional.empty()
 
-                every { todoRepository.findByUserIdAndId(userId, todoId) } returns Optional.empty()
+        When("getTodoDetail 메서드를 호출하면") {
+            // "행동"을 수행
+            val thrown = shouldThrow<CustomException> {
+                todoService.getTodoDetail(3L, 999L)
+            }
 
-                // when & then
-                val thrown = shouldThrow<CustomException> {
-                    todoService.getTodoDetail(userId, todoId)
-                }
-                // 예외 메시지나 ErrorType 등을 필요에 맞게 검증
+            Then("NOT_FOUND_TODO 예외(CustomException)가 발생해야 한다") {
+                // "결과" 검증
                 thrown.errorType shouldBe ErrorType.NOT_FOUND_TODO
                 thrown.domainCode shouldBe DomainCode.TODO
 
-                verify(exactly = 1) { todoRepository.findByUserIdAndId(userId, todoId) }
+                verify(exactly = 1) {
+                    todoRepository.findByUserIdAndId(3L, 999L)
+                }
             }
         }
     }
 
-    describe("TodoService.createTodo()") {
-        context("올바른 CreateTodoRequest 가 주어졌을 때") {
-            it("새로운 Todo 를 생성하고 저장한다") {
-                // given
-                val userId = 1L
-                val user = Users(
-                    email = "test@example.com",
-                    providerType = ProviderType.GOOGLE,
-                    providerId = "google-1234"
-                )
+    Given("올바른 CreateTodoRequest가 주어졌을 때") {
+        // 전제(Given) - 테스트 준비
+        val userId = 1L
+        val user = Users(
+            email = "test@example.com",
+            providerType = ProviderType.GOOGLE,
+            providerId = "google-1234"
+        )
 
-                val requestDto = CreateTodoRequest(
-                    title = "Test Title",
-                    description = "description",
-                    startDate = LocalDateTime.now(),
-                    endDate = LocalDateTime.now(),
-                    deadline = LocalDateTime.now(),
-                    timeZone = "GMT+9"
-                )
+        val requestDto = CreateTodoRequest(
+            title = "Test Title",
+            description = "description",
+            startDate = LocalDateTime.now(),
+            endDate = LocalDateTime.now(),
+            deadline = LocalDateTime.now(),
+            timeZone = "GMT+9"
+        )
 
-                val todoEntity = requestDto.toEntity(user)
-                ReflectionTestUtils.setField(todoEntity, "id", 10)
+        val todoEntity = requestDto.toEntity(user).also {
+            ReflectionTestUtils.setField(it, "id", 10)
+        }
 
-                // Mock 동작 정의
-                every { userService.getUserByUserId(userId) } returns user
-                every { todoRepository.save(any()) } returns todoEntity
+        // 목(Mock) 동작 정의
+        every { userService.getUserByUserId(userId) } returns user
+        every { todoRepository.save(any()) } returns todoEntity
 
-                // when
-                val result = todoService.createTodo(userId, requestDto)
+        When("createTodo 메서드를 호출하면") {
+            // 행동(When) - 실제 메서드 호출
+            val result = todoService.createTodo(userId, requestDto)
 
-                // then
+            Then("새로운 Todo가 생성되어 저장된다") {
+                // 결과(Then) - 검증
                 result.id shouldBe 10
                 result.title shouldBe "Test Title"
                 result.user shouldBe user
@@ -90,49 +91,48 @@ class TodoUnitService : DescribeSpec({
         }
     }
 
-    describe("TodoService.updateTodo()") {
-        context("존재하는 userId, todoId가 주어지고 UpdateTodoRequest가 유효할 때") {
-            it("해당 Todo의 필드를 업데이트한다") {
-                // given
-                val userId = 1L
-                val todoId = 100L
-                val beforeDate = LocalDateTime.of(2025, 3, 26, 0, 0)
-                val user = Users(
-                    email = "test@example.com",
-                    providerType = ProviderType.GOOGLE,
-                    providerId = "google-1234"
-                )
-                val existingTodo = Todo(
-                    user = user,
-                    title = "Old Title",
-                    description = "Old Desc",
-                    startDate = beforeDate,
-                    endDate = beforeDate,
-                    deadline = beforeDate,
-                    timeZone = "GMT+9"
-                )
+    Given("존재하는 userId=1, todoId=100, 그리고 유효한 UpdateTodoRequest가 주어진 상황") {
+        val userId = 1L
+        val todoId = 100L
 
-                // DB에 저장된 상태라고 가정
-                ReflectionTestUtils.setField(existingTodo, "id", todoId)
+        val beforeDate = LocalDateTime.of(2025, 3, 26, 0, 0)
+        val user = Users(
+            email = "test@example.com",
+            providerType = ProviderType.GOOGLE,
+            providerId = "google-1234"
+        )
 
-                // 업데이트 요청
-                val afterDate = LocalDateTime.of(2025, 12, 31, 0, 0)
-                val updateRequest = UpdateTodoRequest(
-                    title = "New Title",
-                    description = "New Description",
-                    startDate = beforeDate,
-                    endDate = afterDate,
-                    deadline = afterDate,
-                    timeZone = "GMT+9"
-                )
+        val existingTodo = Todo(
+            user = user,
+            title = "Old Title",
+            description = "Old Desc",
+            startDate = beforeDate,
+            endDate = beforeDate,
+            deadline = beforeDate,
+            timeZone = "GMT+9"
+        ).also {
+            // DB에 저장된 상태라고 가정
+            ReflectionTestUtils.setField(it, "id", todoId)
+        }
 
-                // getTodoDetail 내부 메서드 모킹
-                every { todoRepository.findByUserIdAndId(userId, todoId) } returns Optional.of(existingTodo)
+        // 업데이트 요청
+        val afterDate = LocalDateTime.of(2025, 12, 31, 0, 0)
+        val updateRequest = UpdateTodoRequest(
+            title = "New Title",
+            description = "New Description",
+            startDate = beforeDate,
+            endDate = afterDate,
+            deadline = afterDate,
+            timeZone = "GMT+9"
+        )
 
-                // when
-                todoService.updateTodo(userId, todoId, updateRequest)
+        // getTodoDetail 내부에서 호출되는 레포지토리 동작 Mock
+        every { todoRepository.findByUserIdAndId(userId, todoId) } returns Optional.of(existingTodo)
 
-                // then
+        When("updateTodo(userId, todoId, updateRequest)를 호출하면") {
+            todoService.updateTodo(userId, todoId, updateRequest)
+
+            Then("해당 Todo의 필드가 업데이트 요청 내용으로 변경된다") {
                 existingTodo.title shouldBe "New Title"
                 existingTodo.description shouldBe "New Description"
                 existingTodo.startDate shouldBe updateRequest.startDate
@@ -140,8 +140,9 @@ class TodoUnitService : DescribeSpec({
                 existingTodo.deadline shouldBe updateRequest.deadline
                 existingTodo.timeZone shouldBe TimeUtil.convertToTimeZone(updateRequest.timeZone).getOrNull()
 
-                // verify
-                verify(exactly = 1) { todoRepository.findByUserIdAndId(userId, todoId) }
+                verify(exactly = 1) {
+                    todoRepository.findByUserIdAndId(userId, todoId)
+                }
             }
         }
     }
