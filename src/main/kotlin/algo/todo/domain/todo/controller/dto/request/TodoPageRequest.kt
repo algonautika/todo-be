@@ -14,9 +14,11 @@ data class TodoPageRequest(
         "createdAt", "startDate", "endDate", "deadline"
     )
 
+    private val defaultPreview = "description" to 500
+    private val defaultSort = "createdAt" to "desc"
+
     fun parsePreview(): Pair<String, Int> {
         val parts = preview.split(":")
-        val defaultPreview = "description" to 500
 
         return when {
             parts.size == 2 -> parts[0] to parts[1].toInt()
@@ -46,7 +48,6 @@ data class TodoPageRequest(
 
     private fun parseSort(sort: String): Pair<String, String> {
         val parts = sort.split(":")
-        val defaultSort = "createdAt" to "desc"
 
         return when {
             parts.size == 2 -> {
